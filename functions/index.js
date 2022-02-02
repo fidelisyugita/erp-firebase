@@ -1,15 +1,17 @@
-const config = require("./config");
+const { FIREBASE_CONFIG } = require("./lib/config");
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
 const firebase = require("firebase/app");
-firebase.initializeApp(config.FIREBASE_CONFIG);
+firebase.initializeApp(FIREBASE_CONFIG);
 const auth = require("@firebase/auth");
 
 const express = require("express");
 const app = express();
+
+const { authenticate } = require("./lib/helper");
 
 exports.login = functions
   .region("asia-southeast2")
@@ -17,9 +19,8 @@ exports.login = functions
     const { email, password } = req.body;
     functions.logger.log(`LOGIN USING EMAIL: "${email}"`);
 
-    if (!email || !email.length > 0 || !password || !password.length > 0) {
-      return res.sendStatus(405);
-    }
+    if (!email || !email.length > 0 || !password || !password.length > 0)
+      return res.status(405).json({ message: "Invalid email or password" });
 
     try {
       const userCredential = await auth.signInWithEmailAndPassword(
@@ -27,35 +28,12 @@ exports.login = functions
         email,
         password
       );
-      return res.status(200).json(userCredential.user);
+      return res.status(200).json(userCredential);
     } catch (error) {
       functions.logger.error(error.message);
       return res.status(500).json({ message: error.message });
     }
   });
-
-// Express middleware that validates Firebase ID Tokens passed in the Authorization HTTP header.
-// The Firebase ID token needs to be passed as a Bearer token in the Authorization HTTP header like this:
-// `Authorization: Bearer <Firebase ID Token>`.
-// when decoded successfully, the ID Token content will be added as `req.user`.
-const authenticate = async (req, res, next) => {
-  if (
-    !req.headers.authorization ||
-    !req.headers.authorization.startsWith("Bearer ")
-  ) {
-    return res.status(403).json({ message: "Unauthorized" });
-  }
-  const idToken = req.headers.authorization.split("Bearer ")[1];
-  try {
-    const decodedIdToken = await admin.auth().verifyIdToken(idToken);
-    functions.logger.log(`authenticate decodedIdToken:`, decodedIdToken);
-    req.user = decodedIdToken;
-    return next();
-  } catch (error) {
-    functions.logger.error(error.message);
-    return res.status(500).json({ message: "Invalid token" });
-  }
-};
 
 app.use(authenticate);
 
