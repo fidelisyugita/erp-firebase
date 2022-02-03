@@ -7,10 +7,16 @@ const auth = require("@firebase/auth");
 const { https } = require("./src/lib/utils");
 
 const auto = require("./src/auto");
+const contact = require("./src/contact");
+const measureUnit = require("./src/measureUnit");
+const productCategory = require("./src/productCategory");
 const product = require("./src/product");
 
 // Expose the API as a function
 exports.auto = auto;
+exports.contact = contact;
+exports.measureUnit = measureUnit;
+exports.productCategory = productCategory;
 exports.product = product;
 
 // LOGIN START
