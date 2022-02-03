@@ -16,10 +16,10 @@ const app = express();
 app.use(authenticate);
 
 app.get("/", async (req, res) => {
-  const keyword = String(req?.body?.keyword || "").toLowerCase();
+  const keyword = String(req?.query?.keyword || "").toLowerCase();
 
-  const limit = Number(req?.body?.limit || LIMIT_PER_PAGE);
-  const offset = req?.body?.page ? limit * Number(req.body.page) : 0;
+  const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
+  const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
   logger.log(
     `GET PRODUCTS WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
   );
