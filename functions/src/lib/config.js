@@ -8,3 +8,6 @@ exports.FIREBASE_CONFIG = {
   messagingSenderId: "254532011566",
   appId: "erp-firebase-4e1a2",
 };
+
+exports.REGION = "asia-southeast2";
+exports.LIMIT_PER_PAGE = 10;
