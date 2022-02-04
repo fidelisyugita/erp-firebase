@@ -108,4 +108,19 @@ app.get("/:contactId", async (req, res) => {
   }
 });
 
+app.delete("/:contactId", async (req, res) => {
+  const contactId = req.params.contactId;
+  logger.log(`SOFT-DELETE CONTACT WITH ID: "${contactId}"`);
+
+  try {
+    await contactsCollection
+      .doc(contactId)
+      .set({ isActive: false }, { merge: true });
+    return res.sendStatus(200);
+  } catch (error) {
+    logger.error(error.message);
+    return res.sendStatus(500);
+  }
+});
+
 module.exports = https.onRequest(app);

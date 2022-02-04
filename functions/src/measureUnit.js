@@ -103,4 +103,19 @@ app.get("/:measureUnitId", async (req, res) => {
   }
 });
 
+app.delete("/:measureUnitId", async (req, res) => {
+  const measureUnitId = req.params.measureUnitId;
+  logger.log(`SOFT-DELETE MEASURE UNIT WITH ID: "${measureUnitId}"`);
+
+  try {
+    await measureUnitsCollection
+      .doc(measureUnitId)
+      .set({ isActive: false }, { merge: true });
+    return res.sendStatus(200);
+  } catch (error) {
+    logger.error(error.message);
+    return res.sendStatus(500);
+  }
+});
+
 module.exports = https.onRequest(app);

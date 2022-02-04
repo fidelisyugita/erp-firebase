@@ -5,7 +5,7 @@ if (!admin.apps.length) admin.initializeApp();
 const { LIMIT_PER_PAGE } = require("./lib/config");
 const { authenticate } = require("./lib/helper");
 const {
-  productCategoriesCollection,
+  transactionStatusesCollection,
   serverTimestamp,
   https,
   usersCollection,
@@ -21,11 +21,11 @@ app.get("/", async (req, res) => {
   const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
   const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
   logger.log(
-    `GET PRODUCT CATEGORIES WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
+    `GET TRANSACTION STATUSES WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
   );
 
   try {
-    const querySnapshot = await productCategoriesCollection
+    const querySnapshot = await transactionStatusesCollection
       .where("isActive", "==", true)
       .where("nameLowercase", ">=", keyword)
       .where("nameLowercase", "<=", keyword + "\uf8ff")
@@ -56,7 +56,7 @@ app.post("/", async (req, res) => {
       email: req.user.email,
       displayName: doc.data().displayName,
     };
-    logger.log(`SAVE PRODUCT CATEGORY BY USER: `, user);
+    logger.log(`SAVE TRANSACTION STATUS BY USER: `, user);
 
     const body = req?.body || {};
     let data = {
@@ -68,10 +68,10 @@ app.post("/", async (req, res) => {
       updatedBy: user,
       updatedAt: serverTimestamp(),
     };
-    logger.log(`PRODUCT CATEGORY DATA: `, data);
+    logger.log(`TRANSACTION STATUS DATA: `, data);
 
     if (req?.body?.id) {
-      await productCategoriesCollection
+      await transactionStatusesCollection
         .doc(req.body.id)
         .set(data, { merge: true });
     } else {
@@ -81,7 +81,7 @@ app.post("/", async (req, res) => {
         createdBy: user,
         createdAt: serverTimestamp(),
       };
-      const docRef = await productCategoriesCollection.add(data);
+      const docRef = await transactionStatusesCollection.add(data);
       data = { ...data, id: docRef.id };
     }
 
@@ -92,12 +92,14 @@ app.post("/", async (req, res) => {
   }
 });
 
-app.get("/:productCategoryId", async (req, res) => {
-  const productCategoryId = req.params.productCategoryId;
-  logger.log(`GET PRODUCT CATEGORY WITH ID: "${productCategoryId}"`);
+app.get("/:transactionStatusId", async (req, res) => {
+  const transactionStatusId = req.params.transactionStatusId;
+  logger.log(`GET TRANSACTION STATUS WITH ID: "${transactionStatusId}"`);
 
   try {
-    const doc = await productCategoriesCollection.doc(productCategoryId).get();
+    const doc = await transactionStatusesCollection
+      .doc(transactionStatusId)
+      .get();
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
@@ -105,13 +107,15 @@ app.get("/:productCategoryId", async (req, res) => {
   }
 });
 
-app.delete("/:productCategoryId", async (req, res) => {
-  const productCategoryId = req.params.productCategoryId;
-  logger.log(`SOFT-DELETE PRODUCT CATEGORY WITH ID: "${productCategoryId}"`);
+app.delete("/:transactionStatusId", async (req, res) => {
+  const transactionStatusId = req.params.transactionStatusId;
+  logger.log(
+    `SOFT-DELETE TRANSACTION STATUS WITH ID: "${transactionStatusId}"`
+  );
 
   try {
-    await productCategoriesCollection
-      .doc(productCategoryId)
+    await transactionStatusesCollection
+      .doc(transactionStatusId)
       .set({ isActive: false }, { merge: true });
     return res.sendStatus(200);
   } catch (error) {

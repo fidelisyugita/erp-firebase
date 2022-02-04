@@ -5,7 +5,7 @@ if (!admin.apps.length) admin.initializeApp();
 const { LIMIT_PER_PAGE } = require("./lib/config");
 const { authenticate } = require("./lib/helper");
 const {
-  productCategoriesCollection,
+  transactionsCollection,
   serverTimestamp,
   https,
   usersCollection,
@@ -21,15 +21,15 @@ app.get("/", async (req, res) => {
   const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
   const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
   logger.log(
-    `GET PRODUCT CATEGORIES WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
+    `GET TRANSACTIONS WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
   );
 
   try {
-    const querySnapshot = await productCategoriesCollection
+    const querySnapshot = await transactionsCollection
       .where("isActive", "==", true)
-      .where("nameLowercase", ">=", keyword)
-      .where("nameLowercase", "<=", keyword + "\uf8ff")
-      .orderBy("nameLowercase")
+      .where("invoiceCodeLowercase", ">=", keyword)
+      .where("invoiceCodeLowercase", "<=", keyword + "\uf8ff")
+      .orderBy("invoiceCodeLowercase")
       .limit(limit)
       .offset(offset)
       .get();
@@ -56,24 +56,31 @@ app.post("/", async (req, res) => {
       email: req.user.email,
       displayName: doc.data().displayName,
     };
-    logger.log(`SAVE PRODUCT CATEGORY BY USER: `, user);
+    logger.log(`SAVE TRANSACTION BY USER: `, user);
 
     const body = req?.body || {};
     let data = {
-      name: body?.name,
+      invoiceCode: body?.invoiceCode,
+      buyingPrice: Number(body?.buyingPrice || 0),
+      sellingPrice: Number(body?.sellingPrice || 0),
+      totalUnit: Number(body?.totalUnit || 0),
       description: body?.description,
+      product: body?.product, // from product
+      status: body?.status, // from transactionStatus
+      type: body?.type, // from transactionType
+      customer: body?.customer, // from contact
+      tax: Number(body?.tax || 0), //  in percentage
+      discount: Number(body?.discount || 0), //  in percentage
 
-      nameLowercase: String(body?.name).toLowerCase(),
+      invoiceCodeLowercase: String(body?.invoiceCode).toLowerCase(),
 
       updatedBy: user,
       updatedAt: serverTimestamp(),
     };
-    logger.log(`PRODUCT CATEGORY DATA: `, data);
+    logger.log(`TRANSACTION DATA: `, data);
 
     if (req?.body?.id) {
-      await productCategoriesCollection
-        .doc(req.body.id)
-        .set(data, { merge: true });
+      await transactionsCollection.doc(req.body.id).set(data, { merge: true });
     } else {
       data = {
         ...data,
@@ -81,7 +88,7 @@ app.post("/", async (req, res) => {
         createdBy: user,
         createdAt: serverTimestamp(),
       };
-      const docRef = await productCategoriesCollection.add(data);
+      const docRef = await transactionsCollection.add(data);
       data = { ...data, id: docRef.id };
     }
 
@@ -92,12 +99,12 @@ app.post("/", async (req, res) => {
   }
 });
 
-app.get("/:productCategoryId", async (req, res) => {
-  const productCategoryId = req.params.productCategoryId;
-  logger.log(`GET PRODUCT CATEGORY WITH ID: "${productCategoryId}"`);
+app.get("/:transactionId", async (req, res) => {
+  const transactionId = req.params.transactionId;
+  logger.log(`GET TRANSACTION WITH ID: "${transactionId}"`);
 
   try {
-    const doc = await productCategoriesCollection.doc(productCategoryId).get();
+    const doc = await transactionsCollection.doc(transactionId).get();
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
@@ -105,13 +112,13 @@ app.get("/:productCategoryId", async (req, res) => {
   }
 });
 
-app.delete("/:productCategoryId", async (req, res) => {
-  const productCategoryId = req.params.productCategoryId;
-  logger.log(`SOFT-DELETE PRODUCT CATEGORY WITH ID: "${productCategoryId}"`);
+app.delete("/:transactionId", async (req, res) => {
+  const transactionId = req.params.transactionId;
+  logger.log(`SOFT-DELETE TRANSACTION WITH ID: "${transactionId}"`);
 
   try {
-    await productCategoriesCollection
-      .doc(productCategoryId)
+    await transactionsCollection
+      .doc(transactionId)
       .set({ isActive: false }, { merge: true });
     return res.sendStatus(200);
   } catch (error) {
