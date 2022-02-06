@@ -5,12 +5,13 @@ if (!admin.apps.length) admin.initializeApp();
 const { REGION } = require("./config");
 
 const runtimeOpts = {
-  timeoutSeconds: 30,
+  // timeoutSeconds: 30,
   // memory: '1GB'
 };
 const { https, auth } = functions.region(REGION).runWith(runtimeOpts);
 const { firestore } = admin;
-const { arrayUnion, arrayRemove, serverTimestamp } = firestore.FieldValue;
+const { arrayUnion, arrayRemove, serverTimestamp, increment } =
+  firestore.FieldValue;
 
 // MASTER START
 const measureUnitsCollection = firestore().collection("measureUnits");
@@ -33,6 +34,7 @@ module.exports = {
   arrayUnion,
   arrayRemove,
   serverTimestamp,
+  increment,
 
   measureUnitsCollection,
   productCategoriesCollection,

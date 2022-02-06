@@ -7,8 +7,10 @@ const { authenticate } = require("./lib/helper");
 const {
   transactionsCollection,
   serverTimestamp,
+  increment,
   https,
   usersCollection,
+  productsCollection,
 } = require("./lib/utils");
 
 const express = require("express");
@@ -59,13 +61,12 @@ app.post("/", async (req, res) => {
     logger.log(`SAVE TRANSACTION BY USER: `, user);
 
     const body = req?.body || {};
+    const products = body?.products || []; // from product
     let data = {
       invoiceCode: body?.invoiceCode,
-      buyingPrice: Number(body?.buyingPrice || 0),
-      sellingPrice: Number(body?.sellingPrice || 0),
-      totalUnit: Number(body?.totalUnit || 0),
+      isBuying: body?.isBuying || false,
       description: body?.description,
-      product: body?.product, // from product
+      products: products,
       status: body?.status, // from transactionStatus
       type: body?.type, // from transactionType
       customer: body?.customer, // from contact
@@ -77,6 +78,21 @@ app.post("/", async (req, res) => {
       updatedBy: user,
       updatedAt: serverTimestamp(),
     };
+
+    let totalPrice = 0;
+    let categoryIds = [];
+    products.forEach((item) => {
+      totalPrice +=
+        Number(item?.pricePerUnit || 0) * Number(item?.totalUnit || 1);
+      if (item?.category?.id) categoryIds.push(item.category.id);
+    });
+
+    data = {
+      ...data,
+      totalPrice: totalPrice,
+      categoryIds: categoryIds,
+    };
+
     logger.log(`TRANSACTION DATA: `, data);
 
     if (req?.body?.id) {
@@ -90,6 +106,31 @@ app.post("/", async (req, res) => {
       };
       const docRef = await transactionsCollection.add(data);
       data = { ...data, id: docRef.id };
+
+      // UPDATE PRODUCT START
+      let promises = [];
+      if (products && products.length > 0) {
+        products.forEach((item) => {
+          if (item?.id) {
+            let stockAdded = item?.totalUnit || 0;
+            let sold = 0;
+            if (!data?.isBuying) {
+              stockAdded *= -1;
+              sold = item?.totalUnit || 0;
+            }
+            promises.push(
+              productsCollection
+                .doc(item.id)
+                .set(
+                  { stock: increment(stockAdded), totalSold: increment(sold) },
+                  { merge: true }
+                )
+            );
+          }
+        });
+      }
+      await Promise.all(promises);
+      // UPDATE PRODUCT END
     }
 
     return res.status(200).json(data);
