@@ -19,8 +19,8 @@ app.use(authenticate);
 app.post("/refreshToken", async (req, res) => {
   const { refreshToken, customToken } = req.body;
   try {
-    if (!R.isEmpty(refreshToken)) {
-      const newToken = axios({
+    if (refreshToken && !R.isEmpty(refreshToken)) {
+      const response = await axios({
         method: "post",
         url: `https://securetoken.googleapis.com/v1/token?key=${FIREBASE_CONFIG.apiKey}`,
         data: {
@@ -28,15 +28,14 @@ app.post("/refreshToken", async (req, res) => {
           refresh_token: refreshToken,
         },
       });
-      logger.log(`refreshToken newToken: `, newToken);
       const data = {
-        newAccessToken: newToken.id_token,
-        newRefreshToken: newToken.refresh_token,
+        newAccessToken: response.data.id_token,
+        newRefreshToken: response.data.refresh_token,
       };
       return res.status(200).json(data);
     }
 
-    if (!R.isEmpty(customToken)) {
+    if (customToken && !R.isEmpty(customToken)) {
       const userCredential = await signInWithCustomToken(
         getAuth(),
         customToken
