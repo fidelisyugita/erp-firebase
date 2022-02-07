@@ -14,7 +14,6 @@ exports.authenticate = async (req, res, next) => {
   try {
     const idToken = authorization.split("Bearer ")[1];
     const decodedIdToken = await admin.auth().verifyIdToken(idToken);
-    logger.log(`authenticate decodedIdToken:`, decodedIdToken);
     req.user = decodedIdToken;
     return next();
   } catch (error) {

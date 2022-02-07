@@ -10,6 +10,7 @@ const R = require("ramda");
 const { https, usersCollection } = require("./src/lib/utils");
 
 const auto = require("./src/auto");
+const auth = require("./src/auth");
 const contact = require("./src/contact");
 const measureUnit = require("./src/measureUnit");
 const productCategory = require("./src/productCategory");
@@ -20,6 +21,7 @@ const transaction = require("./src/transaction");
 
 // Expose the API as a function
 exports.auto = auto;
+exports.auth = auth;
 exports.contact = contact;
 exports.measureUnit = measureUnit;
 exports.productCategory = productCategory;
@@ -42,16 +44,18 @@ exports.login = https.onRequest(async (req, res) => {
       email,
       password
     );
-    const userDoc = await usersCollection.doc(userCredential.user.uid).get();
+    const { uid, stsTokenManager } = userCredential.user;
 
-    // const customToken = await admin
-    //   .auth()
-    //   .createCustomToken(userCredential.user.uid);
+    let promises = [];
+    promises.push(usersCollection.doc(uid).get());
+    promises.push(admin.auth().createCustomToken(uid));
+    let promisesResult = await Promise.all(promises);
 
     const data = {
-      user: userDoc.data(),
-      accessToken: await userCredential.user.getIdToken(),
-      // customToken: customToken,
+      user: promisesResult[0].data(),
+      customToken: promisesResult[1],
+      accessToken: stsTokenManager.accessToken,
+      refreshToken: stsTokenManager.refreshToken,
     };
     return res.status(200).json(data);
   } catch (error) {
