@@ -109,7 +109,7 @@ app.delete("/:measureUnitId", async (req, res) => {
     await measureUnitsCollection
       .doc(measureUnitId)
       .set({ isActive: false }, { merge: true });
-    return res.status(200).json({ id: measureUnitId });
+    return res.status(200).json({ ok: true });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

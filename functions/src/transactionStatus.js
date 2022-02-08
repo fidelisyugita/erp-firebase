@@ -115,7 +115,7 @@ app.delete("/:transactionStatusId", async (req, res) => {
     await transactionStatusesCollection
       .doc(transactionStatusId)
       .set({ isActive: false }, { merge: true });
-    return res.status(200).json({ id: transactionStatusId });
+    return res.status(200).json({ ok: true });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

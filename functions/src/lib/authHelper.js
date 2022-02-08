@@ -20,8 +20,6 @@ exports.authenticate = async (req, res, next) => {
     return next();
   } catch (error) {
     logger.error(error.message);
-    if (error.code == "auth/id-token-expired")
-      return res.status(401).json(ERROR_MESSAGE.unauthorized);
-    return res.status(500).json(error);
+    return res.status(401).json(ERROR_MESSAGE.unauthorized);
   }
 };

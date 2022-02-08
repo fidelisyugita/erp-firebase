@@ -111,7 +111,7 @@ app.delete("/:productCategoryId", async (req, res) => {
     await productCategoriesCollection
       .doc(productCategoryId)
       .set({ isActive: false }, { merge: true });
-    return res.status(200).json({ id: productCategoryId });
+    return res.status(200).json({ ok: true });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

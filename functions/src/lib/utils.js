@@ -5,7 +5,7 @@ if (!admin.apps.length) admin.initializeApp();
 const { REGION } = require("./config");
 
 const runtimeOpts = {
-  // timeoutSeconds: 30,
+  timeoutSeconds: 30,
   // memory: '1GB'
 };
 const { https, auth } = functions.region(REGION).runWith(runtimeOpts);

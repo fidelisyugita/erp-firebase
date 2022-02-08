@@ -114,7 +114,7 @@ app.delete("/:contactId", async (req, res) => {
     await contactsCollection
       .doc(contactId)
       .set({ isActive: false }, { merge: true });
-    return res.status(200).json({ id: contactId });
+    return res.status(200).json({ ok: true });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);
