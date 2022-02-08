@@ -11,3 +11,18 @@ exports.FIREBASE_CONFIG = {
 
 exports.REGION = "asia-southeast2";
 exports.LIMIT_PER_PAGE = 20;
+
+exports.ERROR_MESSAGE = {
+  unauthorized: {
+    code: 401,
+    message: "Unauthorized",
+  },
+  invalidToken: {
+    code: 405,
+    message: "Invalid token",
+  },
+  invalidEmailPassword: {
+    code: 405,
+    message: "Invalid email or password",
+  },
+};

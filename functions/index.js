@@ -1,5 +1,5 @@
 const { logger } = require("firebase-functions");
-const { FIREBASE_CONFIG } = require("./src/lib/config");
+const { FIREBASE_CONFIG, ERROR_MESSAGE } = require("./src/lib/config");
 const firebase = require("firebase/app");
 firebase.initializeApp(FIREBASE_CONFIG);
 const { signInWithEmailAndPassword, getAuth } = require("@firebase/auth");
@@ -36,9 +36,7 @@ exports.login = https.onRequest(async (req, res) => {
   logger.log(`LOGIN USING EMAIL: "${email}"`);
 
   if (R.isEmpty(email) || R.isEmpty(password))
-    return res
-      .status(405)
-      .json({ error: { message: "Invalid email or password" } });
+    return res.status(405).json(ERROR_MESSAGE.invalidEmailPassword);
 
   try {
     const userCredential = await signInWithEmailAndPassword(

@@ -8,7 +8,7 @@ const {
 const axios = require("axios");
 const R = require("ramda");
 
-const { FIREBASE_CONFIG } = require("./lib/config");
+const { FIREBASE_CONFIG, ERROR_MESSAGE } = require("./lib/config");
 const { authenticate } = require("./lib/helper");
 const { https } = require("./lib/utils");
 
@@ -48,7 +48,7 @@ app.post("/refreshToken", async (req, res) => {
     //   return res.status(200).json(data);
     // }
 
-    return res.status(405).json({ error: { message: "Invalid refreshToken" } });
+    return res.status(405).json(ERROR_MESSAGE.invalidToken);
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);
