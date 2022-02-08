@@ -1,7 +1,7 @@
 const { logger } = require("firebase-functions");
 
 const { LIMIT_PER_PAGE } = require("./lib/config");
-const { authenticate } = require("./lib/helper");
+const { authenticate } = require("./lib/authHelper");
 const {
   productsCollection,
   serverTimestamp,

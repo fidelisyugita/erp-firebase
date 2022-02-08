@@ -9,7 +9,7 @@ const axios = require("axios");
 const R = require("ramda");
 
 const { FIREBASE_CONFIG, ERROR_MESSAGE } = require("./lib/config");
-const { authenticate } = require("./lib/helper");
+const { authenticate } = require("./lib/authHelper");
 const { https } = require("./lib/utils");
 
 const express = require("express");
