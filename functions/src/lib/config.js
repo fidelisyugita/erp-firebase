@@ -10,4 +10,4 @@ exports.FIREBASE_CONFIG = {
 };
 
 exports.REGION = "asia-southeast2";
-exports.LIMIT_PER_PAGE = 10;
+exports.LIMIT_PER_PAGE = 20;
