@@ -10,6 +10,14 @@ const transactionStatus = require("./src/transactionStatus");
 const transactionType = require("./src/transactionType");
 const transaction = require("./src/transaction");
 
+// STATIC START
+const express = require("express");
+const { https } = require("./src/lib/utils");
+const app = express();
+app.use("/assets", express.static("src/assets"));
+exports.static = https.onRequest(app);
+// STATIC END
+
 // Expose the API as a function
 exports.auto = auto;
 exports.auth = auth;

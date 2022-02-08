@@ -9,6 +9,7 @@ const {
   https,
   usersCollection,
 } = require("./lib/utils");
+const { createPdfBinary } = require("./lib/pdfHelper");
 
 const express = require("express");
 const app = express();
@@ -154,6 +155,30 @@ app.delete("/:productId", async (req, res) => {
       .doc(productId)
       .set({ isActive: false }, { merge: true });
     return res.status(200).json({ ok: true });
+  } catch (error) {
+    logger.error(error.message);
+    return res.status(500).json(error);
+  }
+});
+
+app.post("/pdf/:productId", async (req, res) => {
+  const productId = req.params.productId;
+  logger.log(`GENERATE PDF FOR PRODUCT WITH ID: "${productId}"`);
+  try {
+    const doc = await productsCollection.doc(productId).get();
+    const product = doc.data();
+
+    docDefinition = {
+      content: [
+        product.name || "No Name",
+        "First paragraph",
+        "Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines",
+      ],
+    };
+
+    const binary = await createPdfBinary(docDefinition);
+
+    return res.status(200).contentType("application/pdf").send(binary);
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);
