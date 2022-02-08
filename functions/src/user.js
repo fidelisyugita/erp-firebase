@@ -1,4 +1,5 @@
 const { logger } = require("firebase-functions");
+const R = require("ramda");
 
 const { LIMIT_PER_PAGE } = require("./lib/config");
 const { authenticate } = require("./lib/authHelper");
@@ -43,31 +44,29 @@ app.get("/", async (req, res) => {
 
 app.put("/", async (req, res) => {
   try {
+    const body = req?.body || {};
+    let data = {
+      phone: body?.phone,
+      imageUrl: body?.imageUrl,
+      name: body?.name,
+      // email: body?.email,
+      roles: body?.roles,
+      address: body?.address,
+      description: body?.description,
+
+      nameLowercase: String(body?.name).toLowerCase(),
+    };
+    Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
+    logger.log(`USER DATA: `, data);
+
     const doc = await usersCollection.doc(req.user.uid).get();
     const user = {
       id: req.user.uid,
       email: req.user.email,
-      displayName: doc.data().displayName,
+      name: doc.data().name || "-",
     };
     logger.log(`UPDATE USER BY: `, user);
-
-    const body = req?.body || {};
-    let data = {
-      phone: user?.phone,
-      imageUrl: user?.imageUrl,
-      name: user?.name,
-      email: user?.email,
-      roles: user?.roles,
-      address: user?.address,
-      description: user?.description,
-
-      nameLowercase: String(body?.name).toLowerCase(),
-
-      updatedBy: user,
-      updatedAt: serverTimestamp(),
-    };
-    logger.log(`USER DATA: `, data);
-
+    data = { ...data, updatedBy: user, updatedAt: serverTimestamp() };
     if (req?.body?.id) {
       await usersCollection.doc(req.body.id).set(data, { merge: true });
     }

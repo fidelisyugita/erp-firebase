@@ -48,26 +48,24 @@ app.get("/", async (req, res) => {
 
 app.post("/", async (req, res) => {
   try {
-    const doc = await usersCollection.doc(req.user.uid).get();
-    const user = {
-      id: req.user.uid,
-      email: req.user.email,
-      displayName: doc.data().displayName,
-    };
-    logger.log(`SAVE TRANSACTION STATUS BY: `, user);
-
     const body = req?.body || {};
     let data = {
       name: body?.name,
       description: body?.description,
 
       nameLowercase: String(body?.name).toLowerCase(),
-
-      updatedBy: user,
-      updatedAt: serverTimestamp(),
     };
+    Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
     logger.log(`TRANSACTION STATUS DATA: `, data);
 
+    const doc = await usersCollection.doc(req.user.uid).get();
+    const user = {
+      id: req.user.uid,
+      email: req.user.email,
+      name: doc.data().name || "-",
+    };
+    logger.log(`SAVE TRANSACTION STATUS BY: `, user);
+    data = { ...data, updatedBy: user, updatedAt: serverTimestamp() };
     if (req?.body?.id) {
       await transactionStatusesCollection
         .doc(req.body.id)

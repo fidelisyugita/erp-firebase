@@ -8,14 +8,15 @@ exports.createUser = auth.user().onCreate(async (user) => {
   const data = {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    phoneNumber: user.phoneNumber,
-    photoURL: user.photoURL,
-    displayName: user.displayName,
+    phone: user.phoneNumber,
+    imageUrl: user.photoURL,
+    name: user.displayName,
     email: user.email,
-    emailVerified: user.emailVerified,
     id: user.uid,
     roles: ["SALES", "ACCOUNTING", "PURCHASE", "INVENTORY"],
     isActive: true,
+
+    nameLowercase: String(body?.displayName).toLowerCase(),
   };
 
   return usersCollection.doc(user.uid).set(data, { merge: true });

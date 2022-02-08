@@ -103,7 +103,7 @@ exports.logout = https.onRequest(async (req, res) => {
 
 exports.resetPassword = https.onRequest(async (req, res) => {
   const { email } = req.body;
-  if (R.isEmpty(email)) return res.status(405).json(ERROR_MESSAGE.invalidEmail);
+  if (R.isEmpty(email)) return res.status(405).json(ERROR_MESSAGE.invalidInput);
 
   try {
     await sendPasswordResetEmail(getAuth(), email);

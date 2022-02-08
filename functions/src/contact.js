@@ -48,14 +48,6 @@ app.get("/", async (req, res) => {
 
 app.post("/", async (req, res) => {
   try {
-    const doc = await usersCollection.doc(req.user.uid).get();
-    const user = {
-      id: req.user.uid,
-      email: req.user.email,
-      displayName: doc.data().displayName,
-    };
-    logger.log(`SAVE CONTACT BY: `, user);
-
     const body = req?.body || {};
     let data = {
       name: body?.name,
@@ -67,12 +59,18 @@ app.post("/", async (req, res) => {
       department: body?.department,
 
       nameLowercase: String(body?.name).toLowerCase(),
-
-      updatedBy: user,
-      updatedAt: serverTimestamp(),
     };
+    Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
     logger.log(`CONTACT DATA: `, data);
 
+    const doc = await usersCollection.doc(req.user.uid).get();
+    const user = {
+      id: req.user.uid,
+      email: req.user.email,
+      name: doc.data().name || "-",
+    };
+    logger.log(`SAVE CONTACT BY: `, user);
+    data = { ...data, updatedBy: user, updatedAt: serverTimestamp() };
     if (req?.body?.id) {
       await contactsCollection.doc(req.body.id).set(data, { merge: true });
     } else {

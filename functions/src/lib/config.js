@@ -25,8 +25,8 @@ exports.ERROR_MESSAGE = {
     code: 405,
     message: "Invalid email or password",
   },
-  invalidEmail: {
+  invalidInput: {
     code: 405,
-    message: "Invalid email",
+    message: "Invalid input",
   },
 };

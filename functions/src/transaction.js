@@ -1,6 +1,7 @@
 const { logger } = require("firebase-functions");
+const R = require("ramda");
 
-const { LIMIT_PER_PAGE } = require("./lib/config");
+const { LIMIT_PER_PAGE, ERROR_MESSAGE } = require("./lib/config");
 const { authenticate } = require("./lib/authHelper");
 const {
   transactionsCollection,
@@ -50,16 +51,12 @@ app.get("/", async (req, res) => {
 
 app.post("/", async (req, res) => {
   try {
-    const doc = await usersCollection.doc(req.user.uid).get();
-    const user = {
-      id: req.user.uid,
-      email: req.user.email,
-      displayName: doc.data().displayName,
-    };
-    logger.log(`SAVE TRANSACTION BY: `, user);
-
     const body = req?.body || {};
     const products = body?.products || []; // from product
+
+    if (!req?.body?.id && R.isEmpty(products))
+      return res.status(405).json(ERROR_MESSAGE.invalidInput);
+
     let data = {
       invoiceCode: body?.invoiceCode,
       isBuying: body?.isBuying || false,
@@ -73,9 +70,6 @@ app.post("/", async (req, res) => {
       note: body?.note,
 
       invoiceCodeLowercase: String(body?.invoiceCode).toLowerCase(),
-
-      updatedBy: user,
-      updatedAt: serverTimestamp(),
     };
 
     let totalPrice = 0;
@@ -91,9 +85,17 @@ app.post("/", async (req, res) => {
       totalPrice: totalPrice,
       categoryIds: categoryIds,
     };
-
+    Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
     logger.log(`TRANSACTION DATA: `, data);
 
+    const doc = await usersCollection.doc(req.user.uid).get();
+    const user = {
+      id: req.user.uid,
+      email: req.user.email,
+      name: doc.data().name || "-",
+    };
+    logger.log(`SAVE TRANSACTION BY: `, user);
+    data = { ...data, updatedBy: user, updatedAt: serverTimestamp() };
     if (req?.body?.id) {
       await transactionsCollection.doc(req.body.id).set(data, { merge: true });
     } else {
@@ -108,26 +110,24 @@ app.post("/", async (req, res) => {
 
       // UPDATE PRODUCT START
       let promises = [];
-      if (products && products.length > 0) {
-        products.forEach((item) => {
-          if (item?.id) {
-            let stockAdded = item?.totalUnit || 0;
-            let sold = 0;
-            if (!data?.isBuying) {
-              stockAdded *= -1;
-              sold = item?.totalUnit || 0;
-            }
-            promises.push(
-              productsCollection
-                .doc(item.id)
-                .set(
-                  { stock: increment(stockAdded), totalSold: increment(sold) },
-                  { merge: true }
-                )
-            );
+      products.forEach((item) => {
+        if (item?.id) {
+          let stockAdded = item?.totalUnit || 0;
+          let sold = 0;
+          if (!data?.isBuying) {
+            stockAdded *= -1;
+            sold = item?.totalUnit || 0;
           }
-        });
-      }
+          promises.push(
+            productsCollection
+              .doc(item.id)
+              .set(
+                { stock: increment(stockAdded), totalSold: increment(sold) },
+                { merge: true }
+              )
+          );
+        }
+      });
       await Promise.all(promises);
       // UPDATE PRODUCT END
     }
