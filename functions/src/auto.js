@@ -15,6 +15,7 @@ exports.createUser = auth.user().onCreate(async (user) => {
     emailVerified: user.emailVerified,
     id: user.uid,
     roles: ["SALES", "ACCOUNTING", "PURCHASE", "INVENTORY"],
+    isActive: true,
   };
 
   return usersCollection.doc(user.uid).set(data, { merge: true });

@@ -56,7 +56,7 @@ app.post("/", async (req, res) => {
       email: req.user.email,
       displayName: doc.data().displayName,
     };
-    logger.log(`SAVE TRANSACTION BY USER: `, user);
+    logger.log(`SAVE TRANSACTION BY: `, user);
 
     const body = req?.body || {};
     const products = body?.products || []; // from product

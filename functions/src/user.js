@@ -2,12 +2,7 @@ const { logger } = require("firebase-functions");
 
 const { LIMIT_PER_PAGE } = require("./lib/config");
 const { authenticate } = require("./lib/authHelper");
-const {
-  transactionTypesCollection,
-  serverTimestamp,
-  https,
-  usersCollection,
-} = require("./lib/utils");
+const { usersCollection, serverTimestamp, https } = require("./lib/utils");
 
 const express = require("express");
 const app = express();
@@ -19,11 +14,11 @@ app.get("/", async (req, res) => {
   const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
   const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
   logger.log(
-    `GET TRANSACTION TYPES WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
+    `GET USERS WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
   );
 
   try {
-    const querySnapshot = await transactionTypesCollection
+    const querySnapshot = await usersCollection
       .where("isActive", "==", true)
       .where("nameLowercase", ">=", keyword)
       .where("nameLowercase", "<=", keyword + "\uf8ff")
@@ -46,7 +41,7 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.post("/", async (req, res) => {
+app.put("/", async (req, res) => {
   try {
     const doc = await usersCollection.doc(req.user.uid).get();
     const user = {
@@ -54,33 +49,27 @@ app.post("/", async (req, res) => {
       email: req.user.email,
       displayName: doc.data().displayName,
     };
-    logger.log(`SAVE TRANSACTION TYPE BY: `, user);
+    logger.log(`UPDATE USER BY: `, user);
 
     const body = req?.body || {};
     let data = {
-      name: body?.name,
-      description: body?.description,
+      phone: user?.phone,
+      imageUrl: user?.imageUrl,
+      name: user?.name,
+      email: user?.email,
+      roles: user?.roles,
+      address: user?.address,
+      description: user?.description,
 
       nameLowercase: String(body?.name).toLowerCase(),
 
       updatedBy: user,
       updatedAt: serverTimestamp(),
     };
-    logger.log(`TRANSACTION TYPE DATA: `, data);
+    logger.log(`USER DATA: `, data);
 
     if (req?.body?.id) {
-      await transactionTypesCollection
-        .doc(req.body.id)
-        .set(data, { merge: true });
-    } else {
-      data = {
-        ...data,
-        isActive: true,
-        createdBy: user,
-        createdAt: serverTimestamp(),
-      };
-      const docRef = await transactionTypesCollection.add(data);
-      data = { ...data, id: docRef.id };
+      await usersCollection.doc(req.body.id).set(data, { merge: true });
     }
 
     return res.status(200).json(data);
@@ -90,12 +79,12 @@ app.post("/", async (req, res) => {
   }
 });
 
-app.get("/:transactionTypeId", async (req, res) => {
-  const transactionTypeId = req.params.transactionTypeId;
-  logger.log(`GET TRANSACTION TYPE WITH ID: "${transactionTypeId}"`);
+app.get("/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  logger.log(`GET USER WITH ID: "${userId}"`);
 
   try {
-    const doc = await transactionTypesCollection.doc(transactionTypeId).get();
+    const doc = await usersCollection.doc(userId).get();
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
@@ -103,14 +92,12 @@ app.get("/:transactionTypeId", async (req, res) => {
   }
 });
 
-app.delete("/:transactionTypeId", async (req, res) => {
-  const transactionTypeId = req.params.transactionTypeId;
-  logger.log(`SOFT-DELETE TRANSACTION TYPE WITH ID: "${transactionTypeId}"`);
+app.delete("/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  logger.log(`SOFT-DELETE USER WITH ID: "${userId}"`);
 
   try {
-    await transactionTypesCollection
-      .doc(transactionTypeId)
-      .set({ isActive: false }, { merge: true });
+    await usersCollection.doc(userId).set({ isActive: false }, { merge: true });
     return res.status(200).json({ ok: true });
   } catch (error) {
     logger.error(error.message);

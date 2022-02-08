@@ -89,7 +89,7 @@ app.post("/", async (req, res) => {
       email: req.user.email,
       displayName: doc.data().displayName,
     };
-    logger.log(`SAVE PRODUCT BY USER: `, user);
+    logger.log(`SAVE PRODUCT BY: `, user);
 
     const body = req?.body || {};
     let data = {

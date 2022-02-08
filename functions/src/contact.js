@@ -54,7 +54,7 @@ app.post("/", async (req, res) => {
       email: req.user.email,
       displayName: doc.data().displayName,
     };
-    logger.log(`SAVE CONTACT BY USER: `, user);
+    logger.log(`SAVE CONTACT BY: `, user);
 
     const body = req?.body || {};
     let data = {
