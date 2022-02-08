@@ -18,6 +18,6 @@ exports.authenticate = async (req, res, next) => {
     return next();
   } catch (error) {
     logger.error(error.message);
-    return res.status(500).json({ message: "Invalid token" });
+    return res.status(500).json(error);
   }
 };

@@ -42,7 +42,7 @@ app.get("/", async (req, res) => {
     return res.status(200).json(result);
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -84,7 +84,7 @@ app.post("/", async (req, res) => {
     return res.status(200).json(data);
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -97,7 +97,7 @@ app.get("/:measureUnitId", async (req, res) => {
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -109,10 +109,10 @@ app.delete("/:measureUnitId", async (req, res) => {
     await measureUnitsCollection
       .doc(measureUnitId)
       .set({ isActive: false }, { merge: true });
-    return res.sendStatus(200);
+    return res.status(200).json({ id: measureUnitId });
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 

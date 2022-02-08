@@ -36,7 +36,9 @@ exports.login = https.onRequest(async (req, res) => {
   logger.log(`LOGIN USING EMAIL: "${email}"`);
 
   if (R.isEmpty(email) || R.isEmpty(password))
-    return res.status(405).json({ message: "Invalid email or password" });
+    return res
+      .status(405)
+      .json({ error: { message: "Invalid email or password" } });
 
   try {
     const userCredential = await signInWithEmailAndPassword(
@@ -48,19 +50,19 @@ exports.login = https.onRequest(async (req, res) => {
 
     let promises = [];
     promises.push(usersCollection.doc(uid).get());
-    promises.push(admin.auth().createCustomToken(uid));
+    // promises.push(admin.auth().createCustomToken(uid));
     let promisesResult = await Promise.all(promises);
 
     const data = {
       user: promisesResult[0].data(),
-      customToken: promisesResult[1],
+      // customToken: promisesResult[1],
       accessToken: stsTokenManager.accessToken,
       refreshToken: stsTokenManager.refreshToken,
     };
     return res.status(200).json(data);
   } catch (error) {
     logger.error(error.message);
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json(error);
   }
 });
 // LOGIN END

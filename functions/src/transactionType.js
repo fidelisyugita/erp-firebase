@@ -42,7 +42,7 @@ app.get("/", async (req, res) => {
     return res.status(200).json(result);
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -86,7 +86,7 @@ app.post("/", async (req, res) => {
     return res.status(200).json(data);
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -99,7 +99,7 @@ app.get("/:transactionTypeId", async (req, res) => {
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -111,10 +111,10 @@ app.delete("/:transactionTypeId", async (req, res) => {
     await transactionTypesCollection
       .doc(transactionTypeId)
       .set({ isActive: false }, { merge: true });
-    return res.sendStatus(200);
+    return res.status(200).json({ id: transactionTypeId });
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 

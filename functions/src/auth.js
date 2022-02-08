@@ -35,43 +35,43 @@ app.post("/refreshToken", async (req, res) => {
       return res.status(200).json(data);
     }
 
-    if (customToken && !R.isEmpty(customToken)) {
-      const userCredential = await signInWithCustomToken(
-        getAuth(),
-        customToken
-      );
-      const { stsTokenManager } = userCredential.user;
-      const data = {
-        newAccessToken: stsTokenManager.accessToken,
-        newRefreshToken: stsTokenManager.refreshToken,
-      };
-      return res.status(200).json(data);
-    }
+    // if (customToken && !R.isEmpty(customToken)) {
+    //   const userCredential = await signInWithCustomToken(
+    //     getAuth(),
+    //     customToken
+    //   );
+    //   const { stsTokenManager } = userCredential.user;
+    //   const data = {
+    //     newAccessToken: stsTokenManager.accessToken,
+    //     newRefreshToken: stsTokenManager.refreshToken,
+    //   };
+    //   return res.status(200).json(data);
+    // }
 
-    return res.sendStatus(405);
+    return res.status(405).json({ error: { message: "Invalid refreshToken" } });
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
 app.post("/logout", async (req, res) => {
   try {
     await signOut(getAuth());
-    return res.sendStatus(200);
+    return res.status(200).json({ id: req.user.uid });
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
 app.post("/resetPassword", async (req, res) => {
   try {
     await sendPasswordResetEmail(getAuth(), req.user.email);
-    return res.sendStatus(200);
+    return res.status(200).json({ id: req.user.uid, email: req.user.email });
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 

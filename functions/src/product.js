@@ -42,7 +42,42 @@ app.get("/", async (req, res) => {
     return res.status(200).json(result);
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
+  }
+});
+
+app.get("/getByCategory", async (req, res) => {
+  const categoryId = String(req?.query?.categoryId || "");
+  const keyword = String(req?.query?.keyword || "").toLowerCase();
+
+  const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
+  const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
+  logger.log(
+    `GET PRODUCTS BY CATEGORY: "${categoryId}", WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
+  );
+
+  try {
+    const querySnapshot = await productsCollection
+      .where("category.id", "==", categoryId)
+      .where("isActive", "==", true)
+      .where("nameLowercase", ">=", keyword)
+      .where("nameLowercase", "<=", keyword + "\uf8ff")
+      .orderBy("nameLowercase")
+      .limit(limit)
+      .offset(offset)
+      .get();
+    const result = querySnapshot.docs.map((doc) => {
+      const data = {
+        ...doc.data(),
+        id: doc.id,
+      };
+      return data;
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    logger.error(error.message);
+    return res.status(500).json(error);
   }
 });
 
@@ -94,7 +129,7 @@ app.post("/", async (req, res) => {
     return res.status(200).json(data);
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -107,7 +142,7 @@ app.get("/:productId", async (req, res) => {
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -119,10 +154,10 @@ app.delete("/:productId", async (req, res) => {
     await productsCollection
       .doc(productId)
       .set({ isActive: false }, { merge: true });
-    return res.sendStatus(200);
+    return res.status(200).json({ id: productId });
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 

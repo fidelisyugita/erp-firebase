@@ -42,7 +42,7 @@ app.get("/", async (req, res) => {
     return res.status(200).json(result);
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -86,7 +86,7 @@ app.post("/", async (req, res) => {
     return res.status(200).json(data);
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -101,7 +101,7 @@ app.get("/:transactionStatusId", async (req, res) => {
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -115,10 +115,10 @@ app.delete("/:transactionStatusId", async (req, res) => {
     await transactionStatusesCollection
       .doc(transactionStatusId)
       .set({ isActive: false }, { merge: true });
-    return res.sendStatus(200);
+    return res.status(200).json({ id: transactionStatusId });
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 

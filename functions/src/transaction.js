@@ -44,7 +44,7 @@ app.get("/", async (req, res) => {
     return res.status(200).json(result);
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -70,6 +70,7 @@ app.post("/", async (req, res) => {
       customer: body?.customer, // from contact
       tax: Number(body?.tax || 0), //  in percentage
       discount: Number(body?.discount || 0), //  in percentage
+      note: body?.note,
 
       invoiceCodeLowercase: String(body?.invoiceCode).toLowerCase(),
 
@@ -134,7 +135,7 @@ app.post("/", async (req, res) => {
     return res.status(200).json(data);
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -147,7 +148,7 @@ app.get("/:transactionId", async (req, res) => {
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
@@ -159,10 +160,10 @@ app.delete("/:transactionId", async (req, res) => {
     await transactionsCollection
       .doc(transactionId)
       .set({ isActive: false }, { merge: true });
-    return res.sendStatus(200);
+    return res.status(200).json({ id: transactionId });
   } catch (error) {
     logger.error(error.message);
-    return res.sendStatus(500);
+    return res.status(500).json(error);
   }
 });
 
