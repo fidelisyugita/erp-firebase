@@ -1,4 +1,5 @@
 const { logger } = require("firebase-functions");
+const R = require("ramda");
 
 const { LIMIT_PER_PAGE } = require("./lib/config");
 const { authenticate } = require("./lib/authHelper");
