@@ -1,29 +1,28 @@
 const PdfPrinter = require("pdfmake/src/printer");
 
-exports.createPdfBinary = (docDefinition) => {
+exports.createPdfBinary = (docDefinition, callback) => {
   const fontDescriptors = {
     Roboto: {
       normal:
-        "https://asia-southeast2-erp-firebase-4e1a2.cloudfunctions.net/static/assets/fonts/Roboto-Regular.ttf",
-      bold: "https://asia-southeast2-erp-firebase-4e1a2.cloudfunctions.net/static/assets/fonts/Roboto-Medium.ttf",
+        "node_modules/roboto-font/fonts/Roboto/roboto-regular-webfont.ttf",
+      bold: "node_modules/roboto-font/fonts/Roboto/roboto-bold-webfont.ttf",
       italics:
-        "https://asia-southeast2-erp-firebase-4e1a2.cloudfunctions.net/static/assets/fonts/Roboto-Italic.ttf",
+        "node_modules/roboto-font/fonts/Roboto/roboto-italic-webfont.ttf",
       bolditalics:
-        "https://asia-southeast2-erp-firebase-4e1a2.cloudfunctions.net/static/assets/fonts/Roboto-MediumItalic.ttf",
+        "node_modules/roboto-font/fonts/Roboto/roboto-bolditalic-webfont.ttf",
     },
   };
   const printer = new PdfPrinter(fontDescriptors);
   const doc = printer.createPdfKitDocument(docDefinition);
 
   let chunks = [];
-  let result;
-
   doc.on("data", (chunk) => chunks.push(chunk));
   doc.on("end", () => {
-    const chunksBase64 = Buffer.concat(chunks).toString("base64");
-    result = `data:application/pdf;base64,${chunksBase64}`;
+    // const stringChunks = Buffer.concat(chunks).toString("base64");
+    // const base64 = `data:application/pdf;base64,${stringChunks}`;
+    // callback(Buffer.from(base64.split(",")[1], "base64"));
+
+    callback(Buffer.concat(chunks));
   });
   doc.end();
-
-  return result;
 };

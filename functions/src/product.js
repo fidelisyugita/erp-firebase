@@ -1,5 +1,6 @@
 const { logger } = require("firebase-functions");
 const R = require("ramda");
+const moment = require("moment");
 
 const { LIMIT_PER_PAGE } = require("./lib/config");
 const { authenticate } = require("./lib/authHelper");
@@ -168,7 +169,7 @@ app.post("/pdf/:productId", async (req, res) => {
     const doc = await productsCollection.doc(productId).get();
     const product = doc.data();
 
-    docDefinition = {
+    const docDefinition = {
       content: [
         product.name || "No Name",
         "First paragraph",
@@ -176,9 +177,15 @@ app.post("/pdf/:productId", async (req, res) => {
       ],
     };
 
-    const binary = await createPdfBinary(docDefinition);
-
-    return res.status(200).contentType("application/pdf").send(binary);
+    createPdfBinary(docDefinition, (pdf) => {
+      return res
+        .status(200)
+        .contentType("application/pdf")
+        .attachment(
+          `Produk: ${product.name} - ${moment().format("D MMM YYYY")}.pdf`
+        )
+        .end(pdf);
+    });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);
