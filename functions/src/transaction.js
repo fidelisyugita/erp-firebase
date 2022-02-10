@@ -64,7 +64,7 @@ app.post("/", async (req, res) => {
       products: products,
       status: body?.status, // from transactionStatus
       type: body?.type, // from transactionType
-      customer: body?.customer, // from contact
+      contact: body?.contact, // from contact
       tax: Number(body?.tax || 0), //  in percentage
       discount: Number(body?.discount || 0), //  in percentage
       note: body?.note,

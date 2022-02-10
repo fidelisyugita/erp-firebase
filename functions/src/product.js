@@ -181,9 +181,7 @@ app.post("/pdf/:productId", async (req, res) => {
       return res
         .status(200)
         .contentType("application/pdf")
-        .attachment(
-          `Produk: ${product.name} - ${moment().format("D MMM YYYY")}.pdf`
-        )
+        .attachment(`${product.name} - ${moment().format("D MMM YYYY")}.pdf`)
         .end(pdf);
     });
   } catch (error) {
