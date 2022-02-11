@@ -11,6 +11,7 @@ const {
   usersCollection,
 } = require("./lib/utils");
 const { createPdfBinary } = require("./lib/pdfHelper");
+const { upload } = require("./lib/storageHelper");
 
 const express = require("express");
 const app = express();
@@ -97,12 +98,13 @@ app.post("/", async (req, res) => {
       sellingPrice: Number(body?.sellingPrice || 0),
       description: body?.description,
       totalSold: Number(body?.totalSold || 0),
-      imageUrl: body?.imageUrl,
+      // imageUrl: body?.imageUrl,
       measureUnit: body?.measureUnit,
 
       skuLowercase: String(body?.sku).toLowerCase(),
       nameLowercase: String(body?.name).toLowerCase(),
     };
+
     Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
     logger.log(`PRODUCT DATA: `, data);
 
@@ -125,6 +127,12 @@ app.post("/", async (req, res) => {
       };
       const docRef = await productsCollection.add(data);
       data = { ...data, id: docRef.id };
+    }
+
+    if (body?.imageBase64 && data?.id) {
+      logger.log("UPLOAD IMAGE FOR PRODUCT ID: ", data.id);
+      const publicUrl = await upload(body.imageBase64, data.id, "products/");
+      if (publicUrl) data.imageUrl = publicUrl;
     }
 
     return res.status(200).json(data);

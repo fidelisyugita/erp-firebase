@@ -57,7 +57,8 @@ app.post("/", async (req, res) => {
       phone: body?.phone,
       address: body?.address,
       description: body?.description,
-      department: body?.department,
+      merchant: body?.merchant,
+      note: body?.note,
 
       nameLowercase: String(body?.name).toLowerCase(),
     };

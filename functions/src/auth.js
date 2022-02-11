@@ -8,7 +8,7 @@ const {
   signInWithCustomToken,
   signOut,
   sendPasswordResetEmail,
-} = require("@firebase/auth");
+} = require("firebase/auth");
 const admin = require("firebase-admin");
 if (!admin.apps.length) admin.initializeApp();
 const axios = require("axios");
