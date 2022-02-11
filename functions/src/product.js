@@ -132,7 +132,12 @@ app.post("/", async (req, res) => {
     if (body?.imageBase64 && data?.id) {
       logger.log("UPLOAD IMAGE FOR PRODUCT ID: ", data.id);
       const publicUrl = await upload(body.imageBase64, data.id, "products/");
-      if (publicUrl) data.imageUrl = publicUrl;
+      if (publicUrl) {
+        data.imageUrl = publicUrl;
+        await productsCollection
+          .doc(data.id)
+          .set({ imageUrl: publicUrl }, { merge: true });
+      }
     }
 
     return res.status(200).json(data);
