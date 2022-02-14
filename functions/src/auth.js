@@ -1,19 +1,12 @@
 const { logger } = require("firebase-functions");
 const { FIREBASE_CONFIG, ERROR_MESSAGE } = require("../src/lib/config");
-const firebase = require("firebase/app");
-firebase.initializeApp(FIREBASE_CONFIG);
-const {
-  signInWithEmailAndPassword,
-  getAuth,
-  signInWithCustomToken,
-  signOut,
-  sendPasswordResetEmail,
-} = require("firebase/auth");
+const { https, usersCollection, fauth } = require("../src/lib/utils");
+
 const admin = require("firebase-admin");
 if (!admin.apps.length) admin.initializeApp();
+
 const axios = require("axios");
 const R = require("ramda");
-const { https, usersCollection } = require("../src/lib/utils");
 
 // LOGIN START
 exports.login = https.onRequest(async (req, res) => {
@@ -24,8 +17,8 @@ exports.login = https.onRequest(async (req, res) => {
     return res.status(405).json(ERROR_MESSAGE.invalidEmailPassword);
 
   try {
-    const userCredential = await signInWithEmailAndPassword(
-      getAuth(),
+    const userCredential = await fauth.signInWithEmailAndPassword(
+      fauth.getAuth(),
       email,
       password
     );
@@ -93,7 +86,7 @@ exports.refreshToken = https.onRequest(async (req, res) => {
 
 exports.logout = https.onRequest(async (req, res) => {
   try {
-    await signOut(getAuth());
+    await fauth.signOut(fauth.getAuth());
     return res.status(200).json({ ok: true });
   } catch (error) {
     logger.error(error.message);
@@ -106,7 +99,7 @@ exports.resetPassword = https.onRequest(async (req, res) => {
   if (R.isEmpty(email)) return res.status(405).json(ERROR_MESSAGE.invalidInput);
 
   try {
-    await sendPasswordResetEmail(getAuth(), email);
+    await fauth.sendPasswordResetEmail(fauth.getAuth(), email);
     return res.status(200).json({ ok: true });
   } catch (error) {
     logger.error(error.message);

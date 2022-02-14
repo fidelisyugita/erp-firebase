@@ -1,8 +1,12 @@
 const { logger } = require("firebase-functions");
 
-const { auth, serverTimestamp, usersCollection } = require("./lib/utils");
+const {
+  authFunctions,
+  serverTimestamp,
+  usersCollection,
+} = require("./lib/utils");
 
-exports.createUser = auth.user().onCreate(async (user) => {
+exports.createUser = authFunctions.user().onCreate(async (user) => {
   logger.log(`CREATE USER: `, user);
 
   const data = {

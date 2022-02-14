@@ -2,16 +2,16 @@ const { logger } = require("firebase-functions");
 const R = require("ramda");
 const moment = require("moment");
 
-const { LIMIT_PER_PAGE } = require("./lib/config");
-const { authenticate } = require("./lib/authHelper");
+const { LIMIT_PER_PAGE } = require("../lib/config");
+const { authenticate } = require("../lib/authHelper");
 const {
   productsCollection,
   serverTimestamp,
   https,
   usersCollection,
-} = require("./lib/utils");
-const { createPdfBinary } = require("./lib/pdfHelper");
-const { upload } = require("./lib/storageHelper");
+} = require("../lib/utils");
+const { createPdfBinary } = require("../lib/pdfHelper");
+const { upload } = require("../lib/storageHelper");
 
 const express = require("express");
 const app = express();
@@ -51,7 +51,7 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/getByCategory", async (req, res) => {
-  const categoryId = String(req?.query?.categoryId || "");
+  const categoryId = String(req?.query?.categoryId);
   const keyword = String(req?.query?.keyword || "").toLowerCase();
 
   const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
@@ -61,8 +61,11 @@ app.get("/getByCategory", async (req, res) => {
   );
 
   try {
-    const querySnapshot = await productsCollection
-      .where("category.id", "==", categoryId)
+    let productRef = productsCollection;
+    if (categoryId && !R.isEmpty(categoryId))
+      productRef = productsCollection.where("category.id", "==", categoryId);
+
+    const querySnapshot = await productRef
       .where("isActive", "==", true)
       .where("nameLowercase", ">=", keyword)
       .where("nameLowercase", "<=", keyword + "\uf8ff")

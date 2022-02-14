@@ -1,8 +1,13 @@
 const functions = require("firebase-functions");
+const { REGION, FIREBASE_CONFIG } = require("./config");
+
+const firebase = require("firebase/app");
+firebase.initializeApp(FIREBASE_CONFIG);
+
+const fauth = require("firebase/auth");
+
 const admin = require("firebase-admin");
 if (!admin.apps.length) admin.initializeApp();
-
-const { REGION, FIREBASE_CONFIG } = require("./config");
 
 const runtimeOpts = {
   timeoutSeconds: 30,
@@ -22,16 +27,19 @@ const transactionStatusesCollection = firestore().collection(
   "transactionStatuses"
 );
 const transactionTypesCollection = firestore().collection("transactionTypes");
+const buyingStatusesCollection = firestore().collection("buyingStatuses");
+const buyingTypesCollection = firestore().collection("buyingTypes");
 // MASTER END
 
 const usersCollection = firestore().collection("users");
 const contactsCollection = firestore().collection("contacts");
 const productsCollection = firestore().collection("products");
 const transactionsCollection = firestore().collection("transactions");
+const buyingsCollection = firestore().collection("buyings");
 
 module.exports = {
   https,
-  auth,
+  authFunctions: auth,
 
   storageBucket,
 
@@ -44,9 +52,14 @@ module.exports = {
   productCategoriesCollection,
   transactionStatusesCollection,
   transactionTypesCollection,
+  buyingStatusesCollection,
+  buyingTypesCollection,
 
   usersCollection,
   contactsCollection,
   productsCollection,
   transactionsCollection,
+  buyingsCollection,
+
+  fauth,
 };

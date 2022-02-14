@@ -1,14 +1,14 @@
 const { logger } = require("firebase-functions");
 const R = require("ramda");
 
-const { LIMIT_PER_PAGE } = require("./lib/config");
-const { authenticate } = require("./lib/authHelper");
+const { LIMIT_PER_PAGE } = require("../lib/config");
+const { authenticate } = require("../lib/authHelper");
 const {
-  measureUnitsCollection,
+  buyingTypesCollection,
   serverTimestamp,
   https,
   usersCollection,
-} = require("./lib/utils");
+} = require("../lib/utils");
 
 const express = require("express");
 const app = express();
@@ -20,11 +20,11 @@ app.get("/", async (req, res) => {
   const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
   const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
   logger.log(
-    `GET MEASURE UNITS WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
+    `GET BUYING TYPES WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
   );
 
   try {
-    const querySnapshot = await measureUnitsCollection
+    const querySnapshot = await buyingTypesCollection
       .where("isActive", "==", true)
       .where("nameLowercase", ">=", keyword)
       .where("nameLowercase", "<=", keyword + "\uf8ff")
@@ -57,7 +57,7 @@ app.post("/", async (req, res) => {
       nameLowercase: String(body?.name).toLowerCase(),
     };
     Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
-    logger.log(`MEASURE UNIT DATA: `, data);
+    logger.log(`BUYING TYPE DATA: `, data);
 
     const doc = await usersCollection.doc(req.user.uid).get();
     const user = {
@@ -65,10 +65,10 @@ app.post("/", async (req, res) => {
       email: req.user.email,
       name: doc.data().name || "-",
     };
-    logger.log(`SAVE MEASURE UNIT BY: `, user);
+    logger.log(`SAVE BUYING TYPE BY: `, user);
     data = { ...data, updatedBy: user, updatedAt: serverTimestamp() };
     if (req?.body?.id) {
-      await measureUnitsCollection.doc(req.body.id).set(data, { merge: true });
+      await buyingTypesCollection.doc(req.body.id).set(data, { merge: true });
     } else {
       data = {
         ...data,
@@ -76,7 +76,7 @@ app.post("/", async (req, res) => {
         createdBy: user,
         createdAt: serverTimestamp(),
       };
-      const docRef = await measureUnitsCollection.add(data);
+      const docRef = await buyingTypesCollection.add(data);
       data = { ...data, id: docRef.id };
     }
 
@@ -87,12 +87,12 @@ app.post("/", async (req, res) => {
   }
 });
 
-app.get("/:measureUnitId", async (req, res) => {
-  const measureUnitId = req.params.measureUnitId;
-  logger.log(`GET MEASURE UNIT WITH ID: "${measureUnitId}"`);
+app.get("/:buyingTypeId", async (req, res) => {
+  const buyingTypeId = req.params.buyingTypeId;
+  logger.log(`GET BUYING TYPE WITH ID: "${buyingTypeId}"`);
 
   try {
-    const doc = await measureUnitsCollection.doc(measureUnitId).get();
+    const doc = await buyingTypesCollection.doc(buyingTypeId).get();
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
@@ -100,13 +100,13 @@ app.get("/:measureUnitId", async (req, res) => {
   }
 });
 
-app.delete("/:measureUnitId", async (req, res) => {
-  const measureUnitId = req.params.measureUnitId;
-  logger.log(`SOFT-DELETE MEASURE UNIT WITH ID: "${measureUnitId}"`);
+app.delete("/:buyingTypeId", async (req, res) => {
+  const buyingTypeId = req.params.buyingTypeId;
+  logger.log(`SOFT-DELETE BUYING TYPE WITH ID: "${buyingTypeId}"`);
 
   try {
-    await measureUnitsCollection
-      .doc(measureUnitId)
+    await buyingTypesCollection
+      .doc(buyingTypeId)
       .set({ isActive: false }, { merge: true });
     return res.status(200).json({ ok: true });
   } catch (error) {

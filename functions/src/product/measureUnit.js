@@ -1,14 +1,14 @@
 const { logger } = require("firebase-functions");
 const R = require("ramda");
 
-const { LIMIT_PER_PAGE } = require("./lib/config");
-const { authenticate } = require("./lib/authHelper");
+const { LIMIT_PER_PAGE } = require("../lib/config");
+const { authenticate } = require("../lib/authHelper");
 const {
-  productCategoriesCollection,
+  measureUnitsCollection,
   serverTimestamp,
   https,
   usersCollection,
-} = require("./lib/utils");
+} = require("../lib/utils");
 
 const express = require("express");
 const app = express();
@@ -20,11 +20,11 @@ app.get("/", async (req, res) => {
   const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
   const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
   logger.log(
-    `GET PRODUCT CATEGORIES WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
+    `GET MEASURE UNITS WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
   );
 
   try {
-    const querySnapshot = await productCategoriesCollection
+    const querySnapshot = await measureUnitsCollection
       .where("isActive", "==", true)
       .where("nameLowercase", ">=", keyword)
       .where("nameLowercase", "<=", keyword + "\uf8ff")
@@ -57,7 +57,7 @@ app.post("/", async (req, res) => {
       nameLowercase: String(body?.name).toLowerCase(),
     };
     Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
-    logger.log(`PRODUCT CATEGORY DATA: `, data);
+    logger.log(`MEASURE UNIT DATA: `, data);
 
     const doc = await usersCollection.doc(req.user.uid).get();
     const user = {
@@ -65,12 +65,10 @@ app.post("/", async (req, res) => {
       email: req.user.email,
       name: doc.data().name || "-",
     };
-    logger.log(`SAVE PRODUCT CATEGORY BY: `, user);
+    logger.log(`SAVE MEASURE UNIT BY: `, user);
     data = { ...data, updatedBy: user, updatedAt: serverTimestamp() };
     if (req?.body?.id) {
-      await productCategoriesCollection
-        .doc(req.body.id)
-        .set(data, { merge: true });
+      await measureUnitsCollection.doc(req.body.id).set(data, { merge: true });
     } else {
       data = {
         ...data,
@@ -78,7 +76,7 @@ app.post("/", async (req, res) => {
         createdBy: user,
         createdAt: serverTimestamp(),
       };
-      const docRef = await productCategoriesCollection.add(data);
+      const docRef = await measureUnitsCollection.add(data);
       data = { ...data, id: docRef.id };
     }
 
@@ -89,12 +87,12 @@ app.post("/", async (req, res) => {
   }
 });
 
-app.get("/:productCategoryId", async (req, res) => {
-  const productCategoryId = req.params.productCategoryId;
-  logger.log(`GET PRODUCT CATEGORY WITH ID: "${productCategoryId}"`);
+app.get("/:measureUnitId", async (req, res) => {
+  const measureUnitId = req.params.measureUnitId;
+  logger.log(`GET MEASURE UNIT WITH ID: "${measureUnitId}"`);
 
   try {
-    const doc = await productCategoriesCollection.doc(productCategoryId).get();
+    const doc = await measureUnitsCollection.doc(measureUnitId).get();
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
@@ -102,13 +100,13 @@ app.get("/:productCategoryId", async (req, res) => {
   }
 });
 
-app.delete("/:productCategoryId", async (req, res) => {
-  const productCategoryId = req.params.productCategoryId;
-  logger.log(`SOFT-DELETE PRODUCT CATEGORY WITH ID: "${productCategoryId}"`);
+app.delete("/:measureUnitId", async (req, res) => {
+  const measureUnitId = req.params.measureUnitId;
+  logger.log(`SOFT-DELETE MEASURE UNIT WITH ID: "${measureUnitId}"`);
 
   try {
-    await productCategoriesCollection
-      .doc(productCategoryId)
+    await measureUnitsCollection
+      .doc(measureUnitId)
       .set({ isActive: false }, { merge: true });
     return res.status(200).json({ ok: true });
   } catch (error) {

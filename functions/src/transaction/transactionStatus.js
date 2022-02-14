@@ -1,14 +1,14 @@
 const { logger } = require("firebase-functions");
 const R = require("ramda");
 
-const { LIMIT_PER_PAGE } = require("./lib/config");
-const { authenticate } = require("./lib/authHelper");
+const { LIMIT_PER_PAGE } = require("../lib/config");
+const { authenticate } = require("../lib/authHelper");
 const {
   transactionStatusesCollection,
   serverTimestamp,
   https,
   usersCollection,
-} = require("./lib/utils");
+} = require("../lib/utils");
 
 const express = require("express");
 const app = express();

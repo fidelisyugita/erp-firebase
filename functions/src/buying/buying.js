@@ -1,16 +1,16 @@
 const { logger } = require("firebase-functions");
 const R = require("ramda");
 
-const { LIMIT_PER_PAGE, ERROR_MESSAGE } = require("./lib/config");
-const { authenticate } = require("./lib/authHelper");
+const { LIMIT_PER_PAGE, ERROR_MESSAGE } = require("../lib/config");
+const { authenticate } = require("../lib/authHelper");
 const {
-  transactionsCollection,
+  buyingsCollection,
   serverTimestamp,
   increment,
   https,
   usersCollection,
   productsCollection,
-} = require("./lib/utils");
+} = require("../lib/utils");
 
 const express = require("express");
 const app = express();
@@ -22,11 +22,11 @@ app.get("/", async (req, res) => {
   const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
   const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
   logger.log(
-    `GET TRANSACTIONS WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
+    `GET BUYINGS WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
   );
 
   try {
-    const querySnapshot = await transactionsCollection
+    const querySnapshot = await buyingsCollection
       .where("isActive", "==", true)
       .where("invoiceCodeLowercase", ">=", keyword)
       .where("invoiceCodeLowercase", "<=", keyword + "\uf8ff")
@@ -59,11 +59,10 @@ app.post("/", async (req, res) => {
 
     let data = {
       invoiceCode: body?.invoiceCode,
-      isBuying: body?.isBuying || false,
       description: body?.description,
       products: products,
-      status: body?.status, // from transactionStatus
-      type: body?.type, // from transactionType
+      status: body?.status, // from buyingStatus
+      type: body?.type, // from buyingType
       contact: body?.contact, // from contact
       tax: Number(body?.tax || 0), //  in percentage
       discount: Number(body?.discount || 0), //  in percentage
@@ -86,7 +85,7 @@ app.post("/", async (req, res) => {
       categoryIds: categoryIds,
     };
     Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
-    logger.log(`TRANSACTION DATA: `, data);
+    logger.log(`BUYING DATA: `, data);
 
     const doc = await usersCollection.doc(req.user.uid).get();
     const user = {
@@ -94,10 +93,10 @@ app.post("/", async (req, res) => {
       email: req.user.email,
       name: doc.data().name || "-",
     };
-    logger.log(`SAVE TRANSACTION BY: `, user);
+    logger.log(`SAVE BUYING BY: `, user);
     data = { ...data, updatedBy: user, updatedAt: serverTimestamp() };
     if (req?.body?.id) {
-      await transactionsCollection.doc(req.body.id).set(data, { merge: true });
+      await buyingsCollection.doc(req.body.id).set(data, { merge: true });
     } else {
       data = {
         ...data,
@@ -105,7 +104,7 @@ app.post("/", async (req, res) => {
         createdBy: user,
         createdAt: serverTimestamp(),
       };
-      const docRef = await transactionsCollection.add(data);
+      const docRef = await buyingsCollection.add(data);
       data = { ...data, id: docRef.id };
 
       // UPDATE PRODUCT START
@@ -113,18 +112,10 @@ app.post("/", async (req, res) => {
       products.forEach((item) => {
         if (item?.id) {
           let stockAdded = item?.totalUnit || 0;
-          let sold = 0;
-          if (!data?.isBuying) {
-            stockAdded *= -1;
-            sold = item?.totalUnit || 0;
-          }
           promises.push(
             productsCollection
               .doc(item.id)
-              .set(
-                { stock: increment(stockAdded), totalSold: increment(sold) },
-                { merge: true }
-              )
+              .set({ stock: increment(stockAdded) }, { merge: true })
           );
         }
       });
@@ -139,12 +130,12 @@ app.post("/", async (req, res) => {
   }
 });
 
-app.get("/:transactionId", async (req, res) => {
-  const transactionId = req.params.transactionId;
-  logger.log(`GET TRANSACTION WITH ID: "${transactionId}"`);
+app.get("/:buyingId", async (req, res) => {
+  const buyingId = req.params.buyingId;
+  logger.log(`GET BUYING WITH ID: "${buyingId}"`);
 
   try {
-    const doc = await transactionsCollection.doc(transactionId).get();
+    const doc = await buyingsCollection.doc(buyingId).get();
     return res.status(200).json(doc.data());
   } catch (error) {
     logger.error(error.message);
@@ -152,13 +143,13 @@ app.get("/:transactionId", async (req, res) => {
   }
 });
 
-app.delete("/:transactionId", async (req, res) => {
-  const transactionId = req.params.transactionId;
-  logger.log(`SOFT-DELETE TRANSACTION WITH ID: "${transactionId}"`);
+app.delete("/:buyingId", async (req, res) => {
+  const buyingId = req.params.buyingId;
+  logger.log(`SOFT-DELETE BUYING WITH ID: "${buyingId}"`);
 
   try {
-    await transactionsCollection
-      .doc(transactionId)
+    await buyingsCollection
+      .doc(buyingId)
       .set({ isActive: false }, { merge: true });
     return res.status(200).json({ ok: true });
   } catch (error) {
