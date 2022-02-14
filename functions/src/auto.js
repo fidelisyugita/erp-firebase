@@ -4,7 +4,7 @@ const {
   authFunctions,
   serverTimestamp,
   usersCollection,
-} = require("./lib/utils");
+} = require("./lib/firebaseHelper");
 
 exports.createUser = authFunctions.user().onCreate(async (user) => {
   logger.log(`CREATE USER: `, user);

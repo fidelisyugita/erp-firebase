@@ -3,7 +3,11 @@ const R = require("ramda");
 
 const { LIMIT_PER_PAGE } = require("./lib/config");
 const { authenticate } = require("./lib/authHelper");
-const { usersCollection, serverTimestamp, https } = require("./lib/utils");
+const {
+  usersCollection,
+  serverTimestamp,
+  https,
+} = require("./lib/firebaseHelper");
 
 const express = require("express");
 const app = express();

@@ -8,7 +8,7 @@ const {
   serverTimestamp,
   https,
   usersCollection,
-} = require("../lib/utils");
+} = require("../lib/firebaseHelper");
 
 const express = require("express");
 const app = express();

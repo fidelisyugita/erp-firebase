@@ -9,49 +9,17 @@ const {
   serverTimestamp,
   https,
   usersCollection,
-} = require("../lib/utils");
+} = require("../lib/firebaseHelper");
 const { createPdfBinary } = require("../lib/pdfHelper");
 const { upload } = require("../lib/storageHelper");
+const { thinObject } = require("../lib/utils");
 
 const express = require("express");
 const app = express();
 app.use(authenticate);
 
 app.get("/", async (req, res) => {
-  const keyword = String(req?.query?.keyword || "").toLowerCase();
-
-  const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
-  const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
-  logger.log(
-    `GET PRODUCTS WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
-  );
-
-  try {
-    const querySnapshot = await productsCollection
-      .where("isActive", "==", true)
-      .where("nameLowercase", ">=", keyword)
-      .where("nameLowercase", "<=", keyword + "\uf8ff")
-      .orderBy("nameLowercase")
-      .limit(limit)
-      .offset(offset)
-      .get();
-    const result = querySnapshot.docs.map((doc) => {
-      const data = {
-        ...doc.data(),
-        id: doc.id,
-      };
-      return data;
-    });
-
-    return res.status(200).json(result);
-  } catch (error) {
-    logger.error(error.message);
-    return res.status(500).json(error);
-  }
-});
-
-app.get("/getByCategory", async (req, res) => {
-  const categoryId = String(req?.query?.categoryId);
+  const categoryId = String(req?.query?.categoryId || "");
   const keyword = String(req?.query?.keyword || "").toLowerCase();
 
   const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
@@ -62,7 +30,7 @@ app.get("/getByCategory", async (req, res) => {
 
   try {
     let productRef = productsCollection;
-    if (categoryId && !R.isEmpty(categoryId))
+    if (!R.isEmpty(categoryId))
       productRef = productsCollection.where("category.id", "==", categoryId);
 
     const querySnapshot = await productRef
@@ -96,13 +64,13 @@ app.post("/", async (req, res) => {
       name: body?.name,
       barcode: body?.barcode,
       stock: Number(body?.stock || 0),
-      category: body?.category,
+      category: thinObject(body?.category),
       buyingPrice: Number(body?.buyingPrice || 0),
       sellingPrice: Number(body?.sellingPrice || 0),
       description: body?.description,
       totalSold: Number(body?.totalSold || 0),
       // imageUrl: body?.imageUrl,
-      measureUnit: body?.measureUnit,
+      measureUnit: thinObject(body?.measureUnit),
 
       skuLowercase: String(body?.sku).toLowerCase(),
       nameLowercase: String(body?.name).toLowerCase(),

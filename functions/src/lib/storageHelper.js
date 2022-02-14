@@ -1,6 +1,6 @@
 const R = require("ramda");
 const { FIREBASE_CONFIG } = require("./config");
-const { storageBucket } = require("./utils");
+const { storageBucket } = require("./firebaseHelper");
 
 exports.upload = async (base64, id, folder = "") => {
   const fileType = base64.match(/[^:/]\w+(?=;|,)/)[0];

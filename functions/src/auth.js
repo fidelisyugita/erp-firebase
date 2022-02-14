@@ -1,6 +1,6 @@
 const { logger } = require("firebase-functions");
 const { FIREBASE_CONFIG, ERROR_MESSAGE } = require("../src/lib/config");
-const { https, usersCollection, fauth } = require("../src/lib/utils");
+const { https, usersCollection, fauth } = require("../src/lib/firebaseHelper");
 
 const admin = require("firebase-admin");
 if (!admin.apps.length) admin.initializeApp();

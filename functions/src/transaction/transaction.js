@@ -10,7 +10,8 @@ const {
   https,
   usersCollection,
   productsCollection,
-} = require("../lib/utils");
+} = require("../lib/firebaseHelper");
+const { thinObject, thinContact, thinProduct } = require("../lib/utils");
 
 const express = require("express");
 const app = express();
@@ -60,10 +61,10 @@ app.post("/", async (req, res) => {
     let data = {
       invoiceCode: body?.invoiceCode,
       description: body?.description,
-      products: products,
-      status: body?.status, // from transactionStatus
-      type: body?.type, // from transactionType
-      contact: body?.contact, // from contact
+      products: products.map((p) => thinProduct(p)),
+      status: thinObject(body?.status), // from transactionStatus
+      type: thinObject(body?.type), // from transactionType
+      contact: thinContact(body?.contact), // from contact
       tax: Number(body?.tax || 0), //  in percentage
       discount: Number(body?.discount || 0), //  in percentage
       note: body?.note,
