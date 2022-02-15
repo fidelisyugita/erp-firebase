@@ -20,7 +20,7 @@ exports.generatePdfProduct = (product, callback) => {
   const docDefinition = {
     content: [
       { text: `SKU: ${product.sku}`, style: "header" },
-      { image: barcodeImage, width: 200, height: 80 },
+      { image: canvas.toDataURL(), width: 200, height: 80 },
       { text: `Nama Produk: ${product.name}`, margin: [0, 10, 0, 0] },
       // { image: product.imageUrl, fit: [200, 200] },
       `Kategori: ${product?.category?.name}`,
