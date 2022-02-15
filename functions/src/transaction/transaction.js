@@ -11,7 +11,11 @@ const {
   usersCollection,
   productsCollection,
 } = require("../lib/firebaseHelper");
-const { thinObject, thinContact, thinProduct } = require("../lib/utils");
+const {
+  thinObject,
+  thinContact,
+  thinProduct,
+} = require("../lib/transformHelper");
 
 const express = require("express");
 const app = express();

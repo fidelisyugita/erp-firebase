@@ -12,7 +12,7 @@ const {
 } = require("../lib/firebaseHelper");
 const { createPdfBinary } = require("../lib/pdfHelper");
 const { upload } = require("../lib/storageHelper");
-const { thinObject } = require("../lib/utils");
+const { thinObject } = require("../lib/transformHelper");
 
 const express = require("express");
 const app = express();
