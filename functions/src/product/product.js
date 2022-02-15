@@ -2,7 +2,7 @@ const { logger } = require("firebase-functions");
 const R = require("ramda");
 const moment = require("moment");
 
-const { LIMIT_PER_PAGE } = require("../lib/config");
+const { LIMIT_PER_PAGE, ERROR_MESSAGE } = require("../lib/config");
 const { authenticate } = require("../lib/authHelper");
 const {
   productsCollection,
@@ -10,7 +10,7 @@ const {
   https,
   usersCollection,
 } = require("../lib/firebaseHelper");
-const { createPdfBinary } = require("../lib/pdfHelper");
+const { generatePdfProduct } = require("../lib/pdfHelper");
 const { upload } = require("../lib/storageHelper");
 const { thinObject } = require("../lib/transformHelper");
 
@@ -151,17 +151,11 @@ app.post("/pdf/:productId", async (req, res) => {
   logger.log(`GENERATE PDF FOR PRODUCT WITH ID: "${productId}"`);
   try {
     const doc = await productsCollection.doc(productId).get();
+    if (!doc.exists) return res.status(405).json(ERROR_MESSAGE.invalidInput);
+
     const product = doc.data();
 
-    const docDefinition = {
-      content: [
-        product.name || "No Name",
-        "First paragraph",
-        "Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines",
-      ],
-    };
-
-    createPdfBinary(docDefinition, (pdf) => {
+    generatePdfProduct(product, (pdf) => {
       return res
         .status(200)
         .contentType("application/pdf")
