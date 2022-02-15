@@ -64,10 +64,11 @@ app.post("/", async (req, res) => {
 
     let data = {
       invoiceCode: body?.invoiceCode,
+      barcode: `B-${new Date().getTime()}`,
       description: body?.description,
       products: products.map((p) => thinProduct(p)),
-      status: thinObject(body?.status), // from transactionStatus
-      type: thinObject(body?.type), // from transactionType
+      status: thinObject(body?.status), // from buyingStatus
+      type: thinObject(body?.type), // from buyingType
       contact: thinContact(body?.contact), // from contact
       tax: Number(body?.tax || 0), //  in percentage
       discount: Number(body?.discount || 0), //  in percentage
@@ -157,6 +158,28 @@ app.delete("/:buyingId", async (req, res) => {
       .doc(buyingId)
       .set({ isActive: false }, { merge: true });
     return res.status(200).json({ ok: true });
+  } catch (error) {
+    logger.error(error.message);
+    return res.status(500).json(error);
+  }
+});
+
+app.post("/pdf/:buyingId", async (req, res) => {
+  const buyingId = req.params.buyingId;
+  logger.log(`GENERATE PDF FOR BUYING WITH ID: "${buyingId}"`);
+  try {
+    const doc = await buyingsCollection.doc(buyingId).get();
+    if (!doc.exists) return res.status(405).json(ERROR_MESSAGE.invalidInput);
+
+    const buying = { ...doc.data(), id: doc.id };
+
+    generateDO(buying, (pdf) => {
+      return res
+        .status(200)
+        .contentType("application/pdf")
+        .attachment(`PO - ${buying.invoiceCode} - ${moment().format("D MMM YYYY")}.pdf`)
+        .end(pdf);
+    });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

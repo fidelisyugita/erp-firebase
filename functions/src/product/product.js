@@ -62,7 +62,7 @@ app.post("/", async (req, res) => {
     let data = {
       sku: body?.sku,
       name: body?.name,
-      barcode: body?.barcode,
+      barcode: `P-${new Date().getTime()}`,
       stock: Number(body?.stock || 0),
       category: thinObject(body?.category),
       buyingPrice: Number(body?.buyingPrice || 0),

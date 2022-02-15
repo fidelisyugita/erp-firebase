@@ -15,7 +15,7 @@ const fontDescriptors = {
 exports.generatePdfProduct = (product, callback) => {
   const canvas = createCanvas(0, 0);
   // create a bar code with the number/text I want and populate the canvas with it..
-  JsBarcode(canvas, product.id);
+  JsBarcode(canvas, `${product.barcode}`);
 
   const docDefinition = {
     content: [
@@ -56,7 +56,7 @@ exports.generatePdfProduct = (product, callback) => {
 exports.generateDO = (transaction, callback) => {
   const canvas = createCanvas(0, 0);
   // create a bar code with the number/text I want and populate the canvas with it..
-  JsBarcode(canvas, transaction.id);
+  JsBarcode(canvas, `${transaction.barcode}`);
 
   const docDefinition = {
     content: [

@@ -16,6 +16,7 @@ const {
   thinContact,
   thinProduct,
 } = require("../lib/transformHelper");
+const { generateDO } = require("../lib/pdfHelper");
 
 const express = require("express");
 const app = express();
@@ -64,6 +65,7 @@ app.post("/", async (req, res) => {
 
     let data = {
       invoiceCode: body?.invoiceCode,
+      barcode: `S-${new Date().getTime()}`,
       description: body?.description,
       products: products.map((p) => thinProduct(p)),
       status: thinObject(body?.status), // from transactionStatus
@@ -161,6 +163,28 @@ app.delete("/:transactionId", async (req, res) => {
       .doc(transactionId)
       .set({ isActive: false }, { merge: true });
     return res.status(200).json({ ok: true });
+  } catch (error) {
+    logger.error(error.message);
+    return res.status(500).json(error);
+  }
+});
+
+app.post("/pdf/:transactionId", async (req, res) => {
+  const transactionId = req.params.transactionId;
+  logger.log(`GENERATE PDF FOR TRANSACTION WITH ID: "${transactionId}"`);
+  try {
+    const doc = await transactionsCollection.doc(transactionId).get();
+    if (!doc.exists) return res.status(405).json(ERROR_MESSAGE.invalidInput);
+
+    const transaction = { ...doc.data(), id: doc.id };
+
+    generateDO(transaction, (pdf) => {
+      return res
+        .status(200)
+        .contentType("application/pdf")
+        .attachment(`DO - ${transaction.invoiceCode} - ${moment().format("D MMM YYYY")}.pdf`)
+        .end(pdf);
+    });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);
