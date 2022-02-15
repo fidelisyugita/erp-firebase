@@ -153,7 +153,7 @@ app.post("/pdf/:productId", async (req, res) => {
     const doc = await productsCollection.doc(productId).get();
     if (!doc.exists) return res.status(405).json(ERROR_MESSAGE.invalidInput);
 
-    const product = doc.data();
+    const product = { ...doc.data(), id: doc.id };
 
     generatePdfProduct(product, (pdf) => {
       return res

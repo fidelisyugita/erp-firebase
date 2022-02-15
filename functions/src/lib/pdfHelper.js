@@ -14,23 +14,30 @@ const fontDescriptors = {
 
 exports.generatePdfProduct = (product, callback) => {
   const canvas = createCanvas(0, 0);
-
   // create a bar code with the number/text I want and populate the canvas with it..
   JsBarcode(canvas, product.id);
 
   const docDefinition = {
     content: [
-      `SKU: ${product.sku}`,
-      { image: canvas.toDataURL(), width: 200, height: 80 },
-      `Product Name: ${product.name}`,
-      // { image: product.imageUrl, width: 200, height: 200 },
-      `Category: ${product?.category?.name}`,
-      `Description: ${product.description}`,
+      { text: `SKU: ${product.sku}`, style: "header" },
+      { image: barcodeImage, width: 200, height: 80 },
+      { text: `Nama Produk: ${product.name}`, margin: [0, 10, 0, 0] },
+      // { image: product.imageUrl, fit: [200, 200] },
+      `Kategori: ${product?.category?.name}`,
+      `Deskripsi: ${product.description}`,
+      { text: `Satuan: ${product?.measureUnit?.name}`, margin: [0, 10, 0, 0] },
       `Stock: ${product.stock}`,
-      `Satuan: ${product.measureUnit}`,
       `Terjual: ${product.totalSold}`,
     ],
+
+    styles: {
+      header: {
+        fontSize: 22,
+        bold: true,
+      },
+    },
   };
+
   const printer = new PdfPrinter(fontDescriptors);
   const doc = printer.createPdfKitDocument(docDefinition);
 
