@@ -36,3 +36,13 @@ exports.thinProduct = (obj) => {
     };
   return null;
 };
+
+exports.standarizeData = (docData, id) => {
+  const data = {
+    ...docData,
+    createdAt: docData.createdAt.toDate(),
+    updatedAt: docData.updatedAt.toDate(),
+    id: id,
+  };
+  return data;
+};

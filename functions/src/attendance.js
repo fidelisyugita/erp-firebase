@@ -13,6 +13,7 @@ const {
 const { upload, remove } = require("./lib/storageHelper");
 
 const express = require("express");
+const { standarizeData } = require("./lib/transformHelper");
 const app = express();
 app.use(authenticate);
 
@@ -26,9 +27,7 @@ app.get("/", async (req, res) => {
 
   const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
   const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
-  logger.log(
-    `GET ATTENDANCES WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
-  );
+  logger.log(`GET ATTENDANCES LIMIT: "${limit}", OFFSET: "${offset}"`);
 
   let attendanceRef = attendancesCollection;
   if (start)
@@ -42,13 +41,9 @@ app.get("/", async (req, res) => {
       .limit(limit)
       .offset(offset)
       .get();
-    const result = querySnapshot.docs.map((doc) => {
-      const data = {
-        ...doc.data(),
-        id: doc.id,
-      };
-      return data;
-    });
+    const result = querySnapshot.docs.map((doc) =>
+      standarizeData(doc.data(), doc.id)
+    );
 
     return res.status(200).json(result);
   } catch (error) {
@@ -138,7 +133,7 @@ app.get("/:attendanceId", async (req, res) => {
 
   try {
     const doc = await attendancesCollection.doc(attendanceId).get();
-    return res.status(200).json({ ...doc.data(), id: attendanceId });
+    return res.status(200).json(standarizeData(doc.data(), attendanceId));
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

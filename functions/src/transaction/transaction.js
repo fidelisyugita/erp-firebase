@@ -15,6 +15,7 @@ const {
   thinObject,
   thinContact,
   thinProduct,
+  standarizeData,
 } = require("../lib/transformHelper");
 const { generateDO } = require("../lib/pdfHelper");
 
@@ -40,13 +41,9 @@ app.get("/", async (req, res) => {
       .limit(limit)
       .offset(offset)
       .get();
-    const result = querySnapshot.docs.map((doc) => {
-      const data = {
-        ...doc.data(),
-        id: doc.id,
-      };
-      return data;
-    });
+    const result = querySnapshot.docs.map((doc) =>
+      standarizeData(doc.data(), doc.id)
+    );
 
     return res.status(200).json(result);
   } catch (error) {
@@ -150,7 +147,7 @@ app.get("/:transactionId", async (req, res) => {
 
   try {
     const doc = await transactionsCollection.doc(transactionId).get();
-    return res.status(200).json({ ...doc.data(), id: transactionId });
+    return res.status(200).json(standarizeData(doc.data(), transactionId));
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);
