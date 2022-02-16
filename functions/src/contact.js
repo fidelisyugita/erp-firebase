@@ -99,7 +99,7 @@ app.get("/:contactId", async (req, res) => {
 
   try {
     const doc = await contactsCollection.doc(contactId).get();
-    return res.status(200).json(doc.data());
+    return res.status(200).json({ ...doc.data(), id: contactId });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

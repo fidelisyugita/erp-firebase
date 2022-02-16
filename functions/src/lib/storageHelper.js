@@ -7,6 +7,7 @@ exports.upload = async (base64, id, folder = "") => {
   if (fileType && !R.isEmpty(fileType)) {
     const fileName = `${folder}${id}.${fileType}`;
     const file = storageBucket.file(fileName);
+    if(file.exists()) await file.delete()
 
     const encoded = base64.replace(/^data:\w+\/\w+;base64,/, "");
     const fileBuffer = Buffer.from(encoded, "base64");

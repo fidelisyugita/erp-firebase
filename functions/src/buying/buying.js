@@ -79,16 +79,19 @@ app.post("/", async (req, res) => {
 
     let totalPrice = 0;
     let categoryIds = [];
+    let brandIds = [];
     products.forEach((item) => {
       totalPrice +=
         Number(item?.pricePerUnit || 0) * Number(item?.totalUnit || 1);
       if (item?.category?.id) categoryIds.push(item.category.id);
+      if (item?.brand?.id) brandIds.push(item.brand.id);
     });
 
     data = {
       ...data,
       totalPrice: totalPrice,
       categoryIds: categoryIds,
+      brandIds: brandIds,
     };
     Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
     logger.log(`BUYING DATA: `, data);
@@ -142,7 +145,7 @@ app.get("/:buyingId", async (req, res) => {
 
   try {
     const doc = await buyingsCollection.doc(buyingId).get();
-    return res.status(200).json(doc.data());
+    return res.status(200).json({ ...doc.data(), id: buyingId });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);
@@ -177,7 +180,9 @@ app.post("/pdf/:buyingId", async (req, res) => {
       return res
         .status(200)
         .contentType("application/pdf")
-        .attachment(`PO - ${buying.invoiceCode} - ${moment().format("D MMM YYYY")}.pdf`)
+        .attachment(
+          `PO - ${buying.invoiceCode} - ${moment().format("D MMM YYYY")}.pdf`
+        )
         .end(pdf);
     });
   } catch (error) {

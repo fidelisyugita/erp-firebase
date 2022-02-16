@@ -97,7 +97,7 @@ app.get("/:transactionStatusId", async (req, res) => {
     const doc = await transactionStatusesCollection
       .doc(transactionStatusId)
       .get();
-    return res.status(200).json(doc.data());
+    return res.status(200).json({ ...doc.data(), id: transactionStatusId });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

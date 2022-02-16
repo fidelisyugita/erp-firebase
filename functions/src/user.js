@@ -46,6 +46,18 @@ app.get("/", async (req, res) => {
   }
 });
 
+app.get("/getProfile", async (req, res) => {
+  logger.log(`GET PROFILE WITH ID: "${req.user.uid}"`);
+
+  try {
+    const doc = await usersCollection.doc(req.user.uid).get();
+    return res.status(200).json({ ...doc.data(), id: req.user.uid });
+  } catch (error) {
+    logger.error(error.message);
+    return res.status(500).json(error);
+  }
+});
+
 app.put("/", async (req, res) => {
   try {
     const body = req?.body || {};
@@ -88,7 +100,7 @@ app.get("/:userId", async (req, res) => {
 
   try {
     const doc = await usersCollection.doc(userId).get();
-    return res.status(200).json(doc.data());
+    return res.status(200).json({ ...doc.data(), id: userId });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

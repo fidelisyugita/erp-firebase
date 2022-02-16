@@ -95,7 +95,7 @@ app.get("/:transactionTypeId", async (req, res) => {
 
   try {
     const doc = await transactionTypesCollection.doc(transactionTypeId).get();
-    return res.status(200).json(doc.data());
+    return res.status(200).json({ ...doc.data(), id: transactionTypeId });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

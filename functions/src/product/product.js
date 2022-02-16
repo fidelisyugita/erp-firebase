@@ -62,6 +62,7 @@ app.post("/", async (req, res) => {
     let data = {
       sku: body?.sku,
       name: body?.name,
+      size: body?.size,
       barcode: `P-${new Date().getTime()}`,
       stock: Number(body?.stock || 0),
       category: thinObject(body?.category),
@@ -69,8 +70,8 @@ app.post("/", async (req, res) => {
       sellingPrice: Number(body?.sellingPrice || 0),
       description: body?.description,
       totalSold: Number(body?.totalSold || 0),
-      // imageUrl: body?.imageUrl,
       measureUnit: thinObject(body?.measureUnit),
+      brand: thinObject(body?.brand),
 
       skuLowercase: String(body?.sku).toLowerCase(),
       nameLowercase: String(body?.name).toLowerCase(),
@@ -124,7 +125,7 @@ app.get("/:productId", async (req, res) => {
 
   try {
     const doc = await productsCollection.doc(productId).get();
-    return res.status(200).json(doc.data());
+    return res.status(200).json({ ...doc.data(), id: productId });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

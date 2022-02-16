@@ -3,6 +3,8 @@ const auth = require("./src/auth");
 const user = require("./src/user");
 
 const contact = require("./src/contact");
+
+const brand = require("./src/product/brand");
 const measureUnit = require("./src/product/measureUnit");
 const productCategory = require("./src/product/productCategory");
 const transactionStatus = require("./src/transaction/transactionStatus");
@@ -20,6 +22,8 @@ exports.auth = auth;
 exports.user = user;
 
 exports.contact = contact;
+
+exports.brand = brand;
 exports.measureUnit = measureUnit;
 exports.productCategory = productCategory;
 exports.transactionStatus = transactionStatus;

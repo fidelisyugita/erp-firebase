@@ -21,6 +21,7 @@ const { arrayUnion, arrayRemove, serverTimestamp, increment } =
 const storageBucket = storage().bucket(FIREBASE_CONFIG.storageBucket);
 
 // MASTER START
+const brandsCollection = firestore().collection("brands");
 const measureUnitsCollection = firestore().collection("measureUnits");
 const productCategoriesCollection = firestore().collection("productCategories");
 const transactionStatusesCollection = firestore().collection(
@@ -48,6 +49,7 @@ module.exports = {
   serverTimestamp,
   increment,
 
+  brandsCollection,
   measureUnitsCollection,
   productCategoriesCollection,
   transactionStatusesCollection,
