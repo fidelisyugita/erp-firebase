@@ -34,6 +34,8 @@ const buyingTypesCollection = firestore().collection("buyingTypes");
 
 const usersCollection = firestore().collection("users");
 const contactsCollection = firestore().collection("contacts");
+const attendancesCollection = firestore().collection("attendances");
+
 const productsCollection = firestore().collection("products");
 const transactionsCollection = firestore().collection("transactions");
 const buyingsCollection = firestore().collection("buyings");
@@ -59,6 +61,8 @@ module.exports = {
 
   usersCollection,
   contactsCollection,
+  attendancesCollection,
+
   productsCollection,
   transactionsCollection,
   buyingsCollection,
