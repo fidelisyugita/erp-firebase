@@ -84,8 +84,17 @@ app.post("/", async (req, res) => {
     };
     logger.log(`SAVE PRODUCT BY: `, user);
     data = { ...data, updatedBy: user, updatedAt: serverTimestamp() };
-    if (req?.body?.id) {
-      await productsCollection.doc(req.body.id).set(data, { merge: true });
+
+    const pId = body?.id || `pId${new Date().getTime()}`;
+
+    if (body?.imageBase64) {
+      logger.log("UPLOAD IMAGE FOR PRODUCT ID: ", pId);
+      const publicUrl = await upload(body.imageBase64, pId, "products/");
+      if (publicUrl) data.imageUrl = publicUrl;
+    }
+
+    if (body?.id) {
+      await productsCollection.doc(body.id).set(data, { merge: true });
     } else {
       data = {
         ...data,
@@ -93,19 +102,8 @@ app.post("/", async (req, res) => {
         createdBy: user,
         createdAt: serverTimestamp(),
       };
-      const docRef = await productsCollection.add(data);
+      const docRef = await productsCollection.doc(pId).set(data);
       data = { ...data, id: docRef.id };
-    }
-
-    if (body?.imageBase64 && data?.id) {
-      logger.log("UPLOAD IMAGE FOR PRODUCT ID: ", data.id);
-      const publicUrl = await upload(body.imageBase64, data.id, "products/");
-      if (publicUrl) {
-        data.imageUrl = publicUrl;
-        await productsCollection
-          .doc(data.id)
-          .set({ imageUrl: publicUrl }, { merge: true });
-      }
     }
 
     return res.status(200).json(data);

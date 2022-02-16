@@ -29,4 +29,8 @@ exports.ERROR_MESSAGE = {
     code: 405,
     message: "Invalid input",
   },
+  invalidImage: {
+    code: 405,
+    message: "Invalid image",
+  },
 };

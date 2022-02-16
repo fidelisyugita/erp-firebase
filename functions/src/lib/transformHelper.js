@@ -50,12 +50,11 @@ exports.standarizeData = (docData, id) => {
 };
 
 exports.standarizeUser = (docData, id) => {
-  const data = {
-    ...docData,
-    createdAt: docData.createdAt.toDate(),
-    updatedAt: docData.updatedAt.toDate(),
-    id: id,
-    isAttendToday: isSameDay(docData.lastAttend.toDate(), new Date()),
-  };
+  let data = this.standarizeData(docData, id);
+  if (data?.lastAttend) {
+    const attendDate = data.lastAttend.toDate();
+    data.lastAttend = attendDate;
+    data.isAttendToday = isSameDay(attendDate, new Date());
+  }
   return data;
 };

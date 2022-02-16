@@ -2,7 +2,7 @@ const { logger } = require("firebase-functions");
 const R = require("ramda");
 const moment = require("moment");
 
-const { LIMIT_PER_PAGE } = require("./lib/config");
+const { LIMIT_PER_PAGE, ERROR_MESSAGE } = require("./lib/config");
 const { authenticate } = require("./lib/authHelper");
 const {
   attendancesCollection,
@@ -14,6 +14,7 @@ const { upload, remove } = require("./lib/storageHelper");
 const { standarizeData } = require("./lib/transformHelper");
 
 const express = require("express");
+const { isSameDay } = require("./lib/utils");
 const app = express();
 app.use(authenticate);
 
@@ -55,6 +56,9 @@ app.get("/", async (req, res) => {
 app.post("/", async (req, res) => {
   try {
     const body = req?.body || {};
+    if (!body.imageBase64 || R.isEmpty(body.imageBase64))
+      return res.status(405).json(ERROR_MESSAGE.invalidImage);
+
     let data = {
       isIn: body?.isIn || false,
     };
@@ -68,9 +72,21 @@ app.post("/", async (req, res) => {
       name: doc.data().name || "-",
     };
     logger.log(`SAVE ATTENDANCE BY: `, user);
+
+    const lastAttend = doc.data()?.lastAttend;
+    if (lastAttend && isSameDay(lastAttend.toDate(), new Date()))
+      return res.status(200).json({ ok: true, message: "Already Attend" });
+
     data = { ...data, updatedBy: user, updatedAt: serverTimestamp() };
-    if (req?.body?.id) {
-      await attendancesCollection.doc(req.body.id).set(data, { merge: true });
+
+    const aId = body?.id || `aId${new Date().getTime()}`;
+
+    logger.log("UPLOAD IMAGE FOR ATTENDANCE ID: ", aId);
+    const publicUrl = await upload(body.imageBase64, aId, "attendances/");
+    if (publicUrl) data.imageUrl = publicUrl;
+
+    if (body?.id) {
+      await attendancesCollection.doc(body.id).set(data, { merge: true });
     } else {
       data = {
         ...data,
@@ -78,22 +94,16 @@ app.post("/", async (req, res) => {
         createdBy: user,
         createdAt: serverTimestamp(),
       };
-      const docRef = await attendancesCollection.add(data);
-      data = { ...data, id: docRef.id };
 
-      const userAttendance = { lastAttend: data.createdAt };
-      await usersCollection.doc(user.id).set(userAttendance, { merge: true });
-    }
-
-    if (body?.imageBase64 && data?.id) {
-      logger.log("UPLOAD IMAGE FOR ATTENDANCE ID: ", data.id);
-      const publicUrl = await upload(body.imageBase64, data.id, "attendance/");
-      if (publicUrl) {
-        data.imageUrl = publicUrl;
-        await attendancesCollection
-          .doc(data.id)
-          .set({ imageUrl: publicUrl }, { merge: true });
-      }
+      const promises = [];
+      promises.push(attendancesCollection.doc(aId).set(data));
+      promises.push(
+        usersCollection
+          .doc(user.id)
+          .set({ lastAttend: data.createdAt }, { merge: true })
+      );
+      await Promise.all(promises);
+      data = { ...data, id: aId };
     }
 
     return res.status(200).json(data);
@@ -102,28 +112,31 @@ app.post("/", async (req, res) => {
     return res.status(500).json(error);
   }
 });
-app.put("/approve/attendanceId", async (req, res) => {
+
+app.put("/approve/:attendanceId", async (req, res) => {
   const attendanceId = req.params.attendanceId;
   logger.log(`APPROVE ATTENDANCE WITH ID: "${attendanceId}"`);
   try {
-    const doc = await usersCollection.doc(req.user.uid).get();
+    const userDoc = await usersCollection.doc(req.user.uid).get();
     const user = {
       id: req.user.uid,
       email: req.user.email,
-      name: doc.data().name || "-",
+      name: userDoc.data().name || "-",
     };
     logger.log(`ATTENDANCE APPROVED BY: `, user);
-    data = {
-      ...data,
+
+    const doc = await attendancesCollection.doc(attendanceId).get();
+    const data = {
       imageUrl: null,
       approvedBy: user,
       approvedAt: serverTimestamp(),
     };
-    await attendancesCollection.doc(req.body.id).update(data);
+    const promises = [];
+    promises.push(attendancesCollection.doc(attendanceId).update(data));
+    promises.push(remove(doc.data()?.imageUrl));
+    await Promise.all(promises);
 
-    await remove(data.id, "attendance/");
-
-    return res.status(200).json(data);
+    return res.status(200).json({ ok: true });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);
