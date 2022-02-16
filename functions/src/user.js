@@ -8,7 +8,7 @@ const {
   serverTimestamp,
   https,
 } = require("./lib/firebaseHelper");
-const { standarizeData } = require("./lib/transformHelper");
+const { standarizeUser } = require("./lib/transformHelper");
 
 const express = require("express");
 const app = express();
@@ -33,7 +33,7 @@ app.get("/", async (req, res) => {
       .offset(offset)
       .get();
     const result = querySnapshot.docs.map((doc) =>
-      standarizeData(doc.data(), doc.id)
+      standarizeUser(doc.data(), doc.id)
     );
 
     return res.status(200).json(result);
@@ -48,7 +48,7 @@ app.get("/getProfile", async (req, res) => {
 
   try {
     const doc = await usersCollection.doc(req.user.uid).get();
-    return res.status(200).json({ ...doc.data(), id: req.user.uid });
+    return res.status(200).json(standarizeUser(doc.data(), req.user.uid));
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);
@@ -97,7 +97,7 @@ app.get("/:userId", async (req, res) => {
 
   try {
     const doc = await usersCollection.doc(userId).get();
-    return res.status(200).json(standarizeData(doc.data(), userId));
+    return res.status(200).json(standarizeUser(doc.data(), userId));
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

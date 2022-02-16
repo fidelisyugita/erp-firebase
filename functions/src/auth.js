@@ -1,6 +1,7 @@
 const { logger } = require("firebase-functions");
 const { FIREBASE_CONFIG, ERROR_MESSAGE } = require("../src/lib/config");
 const { https, usersCollection, fauth } = require("../src/lib/firebaseHelper");
+const { standarizeUser } = require("./lib/transformHelper");
 
 const admin = require("firebase-admin");
 if (!admin.apps.length) admin.initializeApp();
@@ -30,7 +31,7 @@ exports.login = https.onRequest(async (req, res) => {
     let promisesResult = await Promise.all(promises);
 
     const data = {
-      user: promisesResult[0].data(),
+      user: standarizeUser(promisesResult[0].data(), uid),
       // customToken: promisesResult[1],
       accessToken: stsTokenManager.accessToken,
       refreshToken: stsTokenManager.refreshToken,

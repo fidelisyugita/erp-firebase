@@ -1,3 +1,5 @@
+const { isSameDay } = require("./utils");
+
 exports.thinObject = (obj) => {
   if (obj && obj.id) return { id: obj.id, name: obj.name };
   return null;
@@ -43,6 +45,17 @@ exports.standarizeData = (docData, id) => {
     createdAt: docData.createdAt.toDate(),
     updatedAt: docData.updatedAt.toDate(),
     id: id,
+  };
+  return data;
+};
+
+exports.standarizeUser = (docData, id) => {
+  const data = {
+    ...docData,
+    createdAt: docData.createdAt.toDate(),
+    updatedAt: docData.updatedAt.toDate(),
+    id: id,
+    isAttendToday: isSameDay(docData.lastAttend.toDate(), new Date()),
   };
   return data;
 };

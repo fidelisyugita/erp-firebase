@@ -11,9 +11,9 @@ const {
   usersCollection,
 } = require("./lib/firebaseHelper");
 const { upload, remove } = require("./lib/storageHelper");
+const { standarizeData } = require("./lib/transformHelper");
 
 const express = require("express");
-const { standarizeData } = require("./lib/transformHelper");
 const app = express();
 app.use(authenticate);
 
@@ -80,6 +80,9 @@ app.post("/", async (req, res) => {
       };
       const docRef = await attendancesCollection.add(data);
       data = { ...data, id: docRef.id };
+
+      const userAttendance = { lastAttend: data.createdAt };
+      await usersCollection.doc(user.id).set(userAttendance, { merge: true });
     }
 
     if (body?.imageBase64 && data?.id) {
