@@ -1,5 +1,5 @@
 const { logger } = require("firebase-functions");
-const R = require("ramda");
+const { isEmpty, isNil } = require("ramda");
 const moment = require("moment");
 
 const { LIMIT_PER_PAGE, ERROR_MESSAGE } = require("./lib/config");
@@ -56,13 +56,13 @@ app.get("/", async (req, res) => {
 app.post("/", async (req, res) => {
   try {
     const body = req?.body || {};
-    if (!body.imageBase64 || R.isEmpty(body.imageBase64))
+    if (isNil(body.imageBase64) || isEmpty(body.imageBase64))
       return res.status(405).json(ERROR_MESSAGE.invalidImage);
 
     let data = {
       isIn: body?.isIn || false,
     };
-    Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
+    Object.keys(data).forEach((key) => isNil(data[key]) && delete data[key]);
     logger.log(`ATTENDANCE DATA: `, data);
 
     const doc = await usersCollection.doc(req.user.uid).get();

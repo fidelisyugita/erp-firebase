@@ -1,5 +1,5 @@
 const { logger } = require("firebase-functions");
-const R = require("ramda");
+const { isNil, isEmpty } = require("ramda");
 
 const { LIMIT_PER_PAGE, ERROR_MESSAGE } = require("../lib/config");
 const { authenticate } = require("../lib/authHelper");
@@ -14,7 +14,7 @@ const {
 const {
   thinObject,
   thinContact,
-  thinProduct,
+  thinTransactionProduct,
   standarizeData,
 } = require("../lib/transformHelper");
 const { generateDO } = require("../lib/pdfHelper");
@@ -57,19 +57,18 @@ app.post("/", async (req, res) => {
     const body = req?.body || {};
     const products = body?.products || []; // from product
 
-    if (!req?.body?.id && R.isEmpty(products))
+    if (isNil(req?.body?.id) && isEmpty(products))
       return res.status(405).json(ERROR_MESSAGE.invalidInput);
 
     let data = {
       invoiceCode: body?.invoiceCode,
-      barcode: `S-${new Date().getTime()}`,
-      description: body?.description,
-      products: products.map((p) => thinProduct(p)),
+      products: products.map((p) => thinTransactionProduct(p)),
       status: thinObject(body?.status), // from transactionStatus
       type: thinObject(body?.type), // from transactionType
       contact: thinContact(body?.contact), // from contact
       tax: Number(body?.tax || 0), //  in percentage
       discount: Number(body?.discount || 0), //  in percentage
+      description: body?.description,
       note: body?.note,
 
       invoiceCodeLowercase: String(body?.invoiceCode).toLowerCase(),
@@ -169,30 +168,30 @@ app.delete("/:transactionId", async (req, res) => {
   }
 });
 
-app.post("/pdf/:transactionId", async (req, res) => {
-  const transactionId = req.params.transactionId;
-  logger.log(`GENERATE PDF FOR TRANSACTION WITH ID: "${transactionId}"`);
-  try {
-    const doc = await transactionsCollection.doc(transactionId).get();
-    if (!doc.exists) return res.status(405).json(ERROR_MESSAGE.invalidInput);
+// app.post("/pdf/:transactionId", async (req, res) => {
+//   const transactionId = req.params.transactionId;
+//   logger.log(`GENERATE PDF FOR TRANSACTION WITH ID: "${transactionId}"`);
+//   try {
+//     const doc = await transactionsCollection.doc(transactionId).get();
+//     if (!doc.exists) return res.status(405).json(ERROR_MESSAGE.invalidInput);
 
-    const transaction = { ...doc.data(), id: doc.id };
+//     const transaction = { ...doc.data(), id: doc.id };
 
-    generateDO(transaction, (pdf) => {
-      return res
-        .status(200)
-        .contentType("application/pdf")
-        .attachment(
-          `DO - ${transaction.invoiceCode} - ${moment().format(
-            "D MMM YYYY"
-          )}.pdf`
-        )
-        .end(pdf);
-    });
-  } catch (error) {
-    logger.error(error.message);
-    return res.status(500).json(error);
-  }
-});
+//     generateDO(transaction, (pdf) => {
+//       return res
+//         .status(200)
+//         .contentType("application/pdf")
+//         .attachment(
+//           `DO - ${transaction.invoiceCode} - ${moment().format(
+//             "D MMM YYYY"
+//           )}.pdf`
+//         )
+//         .end(pdf);
+//     });
+//   } catch (error) {
+//     logger.error(error.message);
+//     return res.status(500).json(error);
+//   }
+// });
 
 module.exports = https.onRequest(app);

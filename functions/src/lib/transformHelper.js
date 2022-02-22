@@ -21,20 +21,39 @@ exports.thinContact = (obj) => {
   return null;
 };
 
-exports.thinProduct = (obj) => {
+exports.thinProductVariant = (obj) => {
+  if (obj && obj.barcode)
+    return {
+      size: obj.size,
+      buyingPrice: Number(obj.buyingPrice || 0),
+      sellingPrice: Number(obj.sellingPrice || 0),
+      stock: Number(obj.stock || 0),
+      sold: Number(obj.sold || 0),
+
+      sku: obj.sku,
+      barcode: obj.barcode,
+
+      skuLowercase: String(obj.sku).toLowerCase(),
+    };
+  return null;
+};
+
+exports.thinTransactionProduct = (obj) => {
   if (obj && obj.id)
     return {
       id: obj.id,
-      name: obj.name,
-      barcode: obj.barcode,
       sku: obj.sku,
+      barcode: obj.barcode,
       size: obj.size,
-      imageUrl: obj.imageUrl,
+      color: obj.color,
       brand: this.thinObject(obj.brand),
+      name: obj.name,
       category: this.thinObject(obj.category),
+      price: Number(obj.price || 0),
+      amount: Number(obj.amount || 0),
+      note: obj.note,
+      imageUrl: obj.imageUrl,
       measureUnit: this.thinObject(obj.measureUnit),
-      pricePerUnit: Number(obj.pricePerUnit || 0),
-      totalUnit: Number(obj.totalUnit || 0),
     };
   return null;
 };

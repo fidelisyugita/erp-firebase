@@ -1,5 +1,5 @@
 const { logger } = require("firebase-functions");
-const R = require("ramda");
+const { isNil, isEmpty } = require("ramda");
 
 const { LIMIT_PER_PAGE, ERROR_MESSAGE } = require("../lib/config");
 const { authenticate } = require("../lib/authHelper");
@@ -14,7 +14,7 @@ const {
 const {
   thinObject,
   thinContact,
-  thinProduct,
+  thinTransactionProduct,
 } = require("../lib/transformHelper");
 
 const express = require("express");
@@ -59,19 +59,18 @@ app.post("/", async (req, res) => {
     const body = req?.body || {};
     const products = body?.products || []; // from product
 
-    if (!req?.body?.id && R.isEmpty(products))
+    if (isNil(req?.body?.id) && isEmpty(products))
       return res.status(405).json(ERROR_MESSAGE.invalidInput);
 
     let data = {
       invoiceCode: body?.invoiceCode,
-      barcode: `B-${new Date().getTime()}`,
-      description: body?.description,
-      products: products.map((p) => thinProduct(p)),
+      products: products.map((p) => thinTransactionProduct(p)),
       status: thinObject(body?.status), // from buyingStatus
       type: thinObject(body?.type), // from buyingType
       contact: thinContact(body?.contact), // from contact
       tax: Number(body?.tax || 0), //  in percentage
       discount: Number(body?.discount || 0), //  in percentage
+      description: body?.description,
       note: body?.note,
 
       invoiceCodeLowercase: String(body?.invoiceCode).toLowerCase(),
@@ -161,30 +160,6 @@ app.delete("/:buyingId", async (req, res) => {
       .doc(buyingId)
       .set({ isActive: false }, { merge: true });
     return res.status(200).json({ ok: true });
-  } catch (error) {
-    logger.error(error.message);
-    return res.status(500).json(error);
-  }
-});
-
-app.post("/pdf/:buyingId", async (req, res) => {
-  const buyingId = req.params.buyingId;
-  logger.log(`GENERATE PDF FOR BUYING WITH ID: "${buyingId}"`);
-  try {
-    const doc = await buyingsCollection.doc(buyingId).get();
-    if (!doc.exists) return res.status(405).json(ERROR_MESSAGE.invalidInput);
-
-    const buying = { ...doc.data(), id: doc.id };
-
-    generateDO(buying, (pdf) => {
-      return res
-        .status(200)
-        .contentType("application/pdf")
-        .attachment(
-          `PO - ${buying.invoiceCode} - ${moment().format("D MMM YYYY")}.pdf`
-        )
-        .end(pdf);
-    });
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

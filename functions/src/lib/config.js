@@ -33,4 +33,8 @@ exports.ERROR_MESSAGE = {
     code: 405,
     message: "Invalid image",
   },
+  alreadyExists: {
+    code: 405,
+    message: "Data already exists",
+  },
 };
