@@ -74,6 +74,9 @@ exports.standarizeUser = (docData, id) => {
     const attendDate = data.lastAttend.toDate();
     data.lastAttend = attendDate;
     data.isAttendToday = isSameDay(attendDate, new Date());
+  } else {
+    data.lastAttend = null;
+    data.isAttendToday = false;
   }
   return data;
 };
