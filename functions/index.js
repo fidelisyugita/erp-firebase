@@ -1,3 +1,5 @@
+const master = require("./src/master");
+
 const auto = require("./src/auto");
 const auth = require("./src/auth");
 
@@ -18,6 +20,8 @@ const transaction = require("./src/transaction/transaction");
 const buying = require("./src/buying/buying");
 
 // Expose the API as a function
+exports.master = master;
+
 exports.auto = auto;
 exports.auth = auth;
 

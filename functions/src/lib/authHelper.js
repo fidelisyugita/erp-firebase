@@ -23,3 +23,10 @@ exports.authenticate = async (req, res, next) => {
     return res.status(401).json(ERROR_MESSAGE.unauthorized);
   }
 };
+
+exports.unseal = async (req, res, next) => {
+  if (req?.headers?.seal !== "asylum")
+    return res.status(401).json(ERROR_MESSAGE.unauthorized);
+
+  return next();
+};
