@@ -78,8 +78,7 @@ app.post("/", async (req, res) => {
     let categoryIds = [];
     let brandIds = [];
     products.forEach((item) => {
-      totalPrice +=
-        Number(item?.pricePerUnit || 0) * Number(item?.totalUnit || 1);
+      totalPrice += Number(item?.price || 0) * Number(item?.amount || 1);
       if (item?.category?.id) categoryIds.push(item.category.id);
       if (item?.brand?.id) brandIds.push(item.brand.id);
     });
@@ -117,8 +116,8 @@ app.post("/", async (req, res) => {
       let promises = [];
       products.forEach((item) => {
         if (item?.id) {
-          let stockAdded = (item?.totalUnit || 0) * -1;
-          let sold = item?.totalUnit || 0;
+          let stockAdded = (item?.amount || 0) * -1;
+          let sold = item?.amount || 0;
           promises.push(
             productsCollection
               .doc(item.id)
