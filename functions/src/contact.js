@@ -1,5 +1,5 @@
 const { logger } = require("firebase-functions");
-const R = require("ramda");
+const { isNil } = require("ramda");
 
 const { LIMIT_PER_PAGE } = require("./lib/config");
 const { authenticate } = require("./lib/authHelper");
@@ -59,7 +59,7 @@ app.post("/", async (req, res) => {
 
       nameLowercase: String(body?.name).toLowerCase(),
     };
-    Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
+    Object.keys(data).forEach((key) => isNil(data[key]) && delete data[key]);
     logger.log(`CONTACT DATA: `, data);
 
     const doc = await usersCollection.doc(req.user.uid).get();

@@ -91,7 +91,7 @@ app.post("/", async (req, res) => {
       categoryIds: categoryIds,
       brandIds: brandIds,
     };
-    Object.keys(data).forEach((key) => R.isNil(data[key]) && delete data[key]);
+    Object.keys(data).forEach((key) => isNil(data[key]) && delete data[key]);
     logger.log(`BUYING DATA: `, data);
 
     const doc = await usersCollection.doc(req.user.uid).get();
