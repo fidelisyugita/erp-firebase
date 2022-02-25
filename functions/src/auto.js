@@ -20,7 +20,7 @@ exports.createUser = authFunctions.user().onCreate(async (user) => {
     roles: ["SALES", "ACCOUNTING", "PURCHASE", "INVENTORY"],
     isActive: true,
 
-    nameLowercase: String(body?.displayName).toLowerCase(),
+    nameLowercase: String(user?.displayName).toLowerCase(),
   };
 
   return usersCollection.doc(user.uid).set(data, { merge: true });
