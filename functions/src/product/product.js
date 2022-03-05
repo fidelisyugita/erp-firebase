@@ -1,6 +1,5 @@
 const { logger } = require("firebase-functions");
 const { isNil, isEmpty } = require("ramda");
-const moment = require("moment");
 
 const { LIMIT_PER_PAGE, ERROR_MESSAGE } = require("../lib/config");
 const { authenticate } = require("../lib/authHelper");
@@ -10,7 +9,7 @@ const {
   https,
   usersCollection,
 } = require("../lib/firebaseHelper");
-const { generatePdfProduct } = require("../lib/pdfHelper");
+// const { generatePdfProduct } = require("../lib/pdfHelper");
 const { upload } = require("../lib/storageHelper");
 const {
   thinObject,
