@@ -81,8 +81,14 @@ app.post("/", async (req, res) => {
     let brandIds = [];
     products.forEach((item) => {
       totalPrice += Number(item?.price || 0) * Number(item?.amount || 1);
-      if (item?.category?.id) categoryIds.push(item.category.id);
-      if (item?.brand?.id) brandIds.push(item.brand.id);
+      if (item?.category?.id) {
+        const catId = item.category.id;
+        if (!categoryIds.includes(catId)) categoryIds.push(catId);
+      }
+      if (item?.brand?.id) {
+        const brandId = item.brand.id;
+        if (!brandIds.includes(brandId)) brandIds.push(brandId);
+      }
     });
 
     data = {
