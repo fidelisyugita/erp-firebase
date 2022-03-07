@@ -9,6 +9,7 @@ const {
   https,
   usersCollection,
 } = require("../lib/firebaseHelper");
+const { standarizeData } = require("../lib/transformHelper");
 
 const express = require("express");
 const app = express();
@@ -33,11 +34,7 @@ app.get("/", async (req, res) => {
       .offset(offset)
       .get();
     const result = querySnapshot.docs.map((doc) => {
-      const data = {
-        ...doc.data(),
-        id: doc.id,
-      };
-      return data;
+      standarizeData(doc.data(), doc.id);
     });
 
     return res.status(200).json(result);
@@ -93,7 +90,7 @@ app.get("/:buyingTypeId", async (req, res) => {
 
   try {
     const doc = await buyingTypesCollection.doc(buyingTypeId).get();
-    return res.status(200).json({ ...doc.data(), id: buyingTypeId });
+    return res.status(200).json(standarizeData(doc.data(), buyingTypeId));
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

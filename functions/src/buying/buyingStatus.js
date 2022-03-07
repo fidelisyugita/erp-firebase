@@ -9,6 +9,7 @@ const {
   https,
   usersCollection,
 } = require("../lib/firebaseHelper");
+const { standarizeData } = require("../lib/transformHelper");
 
 const express = require("express");
 const app = express();
@@ -26,19 +27,13 @@ app.get("/", async (req, res) => {
   try {
     const querySnapshot = await buyingStatusesCollection
       .where("isActive", "==", true)
-      .where("nameLowercase", ">=", keyword)
-      .where("nameLowercase", "<=", keyword + "\uf8ff")
-      .orderBy("nameLowercase")
+      .orderBy("step")
       .limit(limit)
       .offset(offset)
       .get();
-    const result = querySnapshot.docs.map((doc) => {
-      const data = {
-        ...doc.data(),
-        id: doc.id,
-      };
-      return data;
-    });
+    const result = querySnapshot.docs.map((doc) =>
+      standarizeData(doc.data(), doc.id)
+    );
 
     return res.status(200).json(result);
   } catch (error) {
@@ -52,6 +47,8 @@ app.post("/", async (req, res) => {
     const body = req?.body || {};
     let data = {
       name: body?.name,
+      code: body?.code,
+      step: body?.step,
       description: body?.description,
 
       nameLowercase: String(body?.name).toLowerCase(),
@@ -95,7 +92,7 @@ app.get("/:buyingStatusId", async (req, res) => {
 
   try {
     const doc = await buyingStatusesCollection.doc(buyingStatusId).get();
-    return res.status(200).json({ ...doc.data(), id: buyingStatusId });
+    return res.status(200).json(standarizeData(doc.data(), buyingStatusId));
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

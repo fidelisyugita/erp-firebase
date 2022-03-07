@@ -27,9 +27,7 @@ app.get("/", async (req, res) => {
   try {
     const querySnapshot = await transactionStatusesCollection
       .where("isActive", "==", true)
-      .where("nameLowercase", ">=", keyword)
-      .where("nameLowercase", "<=", keyword + "\uf8ff")
-      .orderBy("nameLowercase")
+      .orderBy("step")
       .limit(limit)
       .offset(offset)
       .get();
@@ -49,6 +47,8 @@ app.post("/", async (req, res) => {
     const body = req?.body || {};
     let data = {
       name: body?.name,
+      code: body?.code,
+      step: body?.step,
       description: body?.description,
 
       nameLowercase: String(body?.name).toLowerCase(),
