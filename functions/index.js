@@ -16,6 +16,7 @@ const buyingStatus = require("./src/buying/buyingStatus");
 const buyingType = require("./src/buying/buyingType");
 
 const product = require("./src/product/product");
+const productVariant = require("./src/product/productVariant");
 const transaction = require("./src/transaction/transaction");
 const buying = require("./src/buying/buying");
 
@@ -38,5 +39,6 @@ exports.buyingStatus = buyingStatus;
 exports.buyingType = buyingType;
 
 exports.product = product;
+exports.productVariant = productVariant;
 exports.transaction = transaction;
 exports.buying = buying;

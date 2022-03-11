@@ -71,17 +71,22 @@ app.post("/", async (req, res) => {
       return res.status(405).json(ERROR_MESSAGE.invalidInput);
 
     const timeInMs = new Date().getTime();
+    const barcodes = [];
     const variants = body?.variants.map((variant) => {
+      const barcode = `${timeInMs}${variant?.size}`;
+      const sku = generateSku(
+        body?.category?.name,
+        body?.name,
+        body?.color,
+        variant?.size
+      );
+
       const tempProd = {
         ...variant,
-        sku: generateSku(
-          body?.category?.name,
-          body?.name,
-          body?.color,
-          variant?.size
-        ),
-        barcode: `${timeInMs}${variant?.size}`,
+        sku: sku,
+        barcode: barcode,
       };
+      barcodes.push(barcode);
       return thinProductVariant(tempProd);
     });
 
@@ -94,6 +99,7 @@ app.post("/", async (req, res) => {
       note: body?.note,
 
       variants: variants,
+      barcodes: barcodes,
       nameLowercase: String(body?.name).toLowerCase(),
     };
 
