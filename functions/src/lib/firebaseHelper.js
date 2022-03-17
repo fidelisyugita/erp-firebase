@@ -20,28 +20,28 @@ const { arrayUnion, arrayRemove, serverTimestamp, increment } =
 
 const storageBucket = storage().bucket(FIREBASE_CONFIG.storageBucket);
 
+const db = firestore();
+db.settings({ ignoreUndefinedProperties: true });
 // MASTER START
-const configDoc = firestore().collection("master").doc("config");
-const inventoryDoc = firestore().collection("master").doc("inventory");
+const configDoc = db.collection("master").doc("config");
+const inventoryDoc = db.collection("master").doc("inventory");
 
-const brandsCollection = firestore().collection("brands");
-const measureUnitsCollection = firestore().collection("measureUnits");
-const productCategoriesCollection = firestore().collection("productCategories");
-const transactionStatusesCollection = firestore().collection(
-  "transactionStatuses"
-);
-const transactionTypesCollection = firestore().collection("transactionTypes");
-const buyingStatusesCollection = firestore().collection("buyingStatuses");
-const buyingTypesCollection = firestore().collection("buyingTypes");
+const brandsCollection = db.collection("brands");
+const measureUnitsCollection = db.collection("measureUnits");
+const productCategoriesCollection = db.collection("productCategories");
+const transactionStatusesCollection = db.collection("transactionStatuses");
+const transactionTypesCollection = db.collection("transactionTypes");
+const buyingStatusesCollection = db.collection("buyingStatuses");
+const buyingTypesCollection = db.collection("buyingTypes");
 // MASTER END
 
-const usersCollection = firestore().collection("users");
-const contactsCollection = firestore().collection("contacts");
-const attendancesCollection = firestore().collection("attendances");
+const usersCollection = db.collection("users");
+const contactsCollection = db.collection("contacts");
+const attendancesCollection = db.collection("attendances");
 
-const productsCollection = firestore().collection("products");
-const transactionsCollection = firestore().collection("transactions");
-const buyingsCollection = firestore().collection("buyings");
+const productsCollection = db.collection("products");
+const transactionsCollection = db.collection("transactions");
+const buyingsCollection = db.collection("buyings");
 
 module.exports = {
   https,

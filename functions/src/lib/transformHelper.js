@@ -39,23 +39,21 @@ exports.thinProductVariant = (obj) => {
 };
 
 exports.thinTransactionProduct = (obj) => {
-  if (obj && obj.id)
-    return {
-      id: obj.id,
-      sku: obj.sku,
-      barcode: obj.barcode,
-      size: obj.size,
-      color: obj.color,
-      brand: this.thinObject(obj.brand),
-      name: obj.name,
-      category: this.thinObject(obj.category),
-      price: Number(obj.price || 0),
-      amount: Number(obj.amount || 0),
-      note: obj.note,
-      imageUrl: obj.imageUrl,
-      measureUnit: this.thinObject(obj.measureUnit),
-    };
-  return null;
+  return {
+    id: obj.id,
+    sku: obj.sku,
+    barcode: obj.barcode,
+    size: obj.size,
+    color: obj.color,
+    brand: this.thinObject(obj.brand),
+    name: obj.name,
+    category: this.thinObject(obj.category),
+    price: Number(obj.price || 0),
+    amount: Number(obj.amount || 0),
+    note: obj.note,
+    imageUrl: obj.imageUrl,
+    measureUnit: this.thinObject(obj.measureUnit),
+  };
 };
 
 exports.standarizeData = (docData, id) => {
