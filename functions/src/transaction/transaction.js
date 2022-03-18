@@ -42,10 +42,6 @@ app.get("/", async (req, res) => {
   );
 
   let transactionRef = transactionsCollection.where("isActive", "==", true);
-  if (!isEmpty(statusId))
-    transactionRef = transactionRef.where("status.id", "==", statusId);
-  if (!isEmpty(typeId))
-    transactionRef = transactionRef.where("type.id", "==", typeId);
 
   if (!isEmpty(keyword))
     transactionRef = transactionRef
@@ -53,6 +49,11 @@ app.get("/", async (req, res) => {
       .where("invoiceCodeLowercase", "<=", keyword + "\uf8ff")
       .orderBy("invoiceCodeLowercase");
   else {
+    if (!isEmpty(statusId))
+      transactionRef = transactionRef.where("status.id", "==", statusId);
+    if (!isEmpty(typeId))
+      transactionRef = transactionRef.where("type.id", "==", typeId);
+
     if (start) transactionRef = transactionRef.where("createdAt", ">", start);
     if (end) transactionRef = transactionRef.where("createdAt", "<", end);
 

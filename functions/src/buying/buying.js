@@ -42,9 +42,6 @@ app.get("/", async (req, res) => {
   );
 
   let buyingRef = buyingsCollection.where("isActive", "==", true);
-  if (!isEmpty(statusId))
-    buyingRef = buyingRef.where("status.id", "==", statusId);
-  if (!isEmpty(typeId)) buyingRef = buyingRef.where("type.id", "==", typeId);
 
   if (!isEmpty(keyword))
     buyingRef = buyingRef
@@ -52,6 +49,10 @@ app.get("/", async (req, res) => {
       .where("invoiceCodeLowercase", "<=", keyword + "\uf8ff")
       .orderBy("invoiceCodeLowercase");
   else {
+    if (!isEmpty(statusId))
+      buyingRef = buyingRef.where("status.id", "==", statusId);
+    if (!isEmpty(typeId)) buyingRef = buyingRef.where("type.id", "==", typeId);
+
     if (start) buyingRef = buyingRef.where("createdAt", ">", start);
     if (end) buyingRef = buyingRef.where("createdAt", "<", end);
 
