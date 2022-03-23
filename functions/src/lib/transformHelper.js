@@ -50,7 +50,8 @@ exports.thinTransactionProduct = (obj) => {
     category: this.thinObject(obj.category),
     price: Number(obj.price || 0),
     amount: Number(obj.amount || 0),
-    note: obj.note,
+    received: Number(obj.received || 0),
+    rejected: Number(obj.rejected || 0),
     imageUrl: obj.imageUrl,
     measureUnit: this.thinObject(obj.measureUnit),
   };

@@ -42,6 +42,7 @@ app.get("/", async (req, res) => {
           measureUnit: thinObject(data?.measureUnit),
           note: data?.note,
           imageUrl: data?.imageUrl,
+          id: data?.id,
         });
       });
     });

@@ -169,6 +169,59 @@ app.post("/", async (req, res) => {
   }
 });
 
+app.put("/:transactionId", async (req, res) => {
+  const transactionId = req.params.transactionId;
+  logger.log(`UPDATE TRANSACTION WITH ID: "${transactionId}"`);
+
+  try {
+    const body = req?.body || {};
+    const updatedStatus = thinObject(body?.status);
+    const products = body?.products || []; // from product
+
+    if (isNil(updatedStatus))
+      return res.status(405).json(ERROR_MESSAGE.invalidInput);
+
+    const doc = await transactionsCollection.doc(transactionId).get();
+    if (!doc.exists) return res.status(405).json(ERROR_MESSAGE.invalidInput);
+
+    const updatedProducts = products.map((item) =>
+      thinTransactionProduct(item)
+    );
+
+    const userDoc = await usersCollection.doc(req.user.uid).get();
+    const user = {
+      id: req.user.uid,
+      email: req.user.email,
+      name: userDoc.data().name || "-",
+    };
+    logger.log(`UPDATE TRANSACTION BY: `, user);
+
+    const data = {
+      status: updatedStatus,
+      products: updatedProducts,
+      updatedBy: user,
+      updatedAt: serverTimestamp(),
+    };
+
+    let promises = [];
+    promises.push(
+      transactionsCollection.doc(transactionId).set(data, { merge: true })
+    );
+    promises.push(
+      transactionsCollection
+        .doc(transactionId)
+        .collection("logs")
+        .add({ ...data, createdBy: user, createdAt: serverTimestamp() })
+    );
+    await Promise.all(promises);
+
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    logger.error(error.message);
+    return res.status(500).json(error);
+  }
+});
+
 app.get("/:transactionId", async (req, res) => {
   const transactionId = req.params.transactionId;
   logger.log(`GET TRANSACTION WITH ID: "${transactionId}"`);

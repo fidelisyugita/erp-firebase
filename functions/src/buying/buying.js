@@ -161,6 +161,57 @@ app.post("/", async (req, res) => {
   }
 });
 
+app.put("/:buyingId", async (req, res) => {
+  const buyingId = req.params.buyingId;
+  logger.log(`UPDATE BUYING WITH ID: "${buyingId}"`);
+
+  try {
+    const body = req?.body || {};
+    const updatedStatus = thinObject(body?.status);
+    const products = body?.products || []; // from product
+
+    if (isNil(updatedStatus))
+      return res.status(405).json(ERROR_MESSAGE.invalidInput);
+
+    const doc = await buyingsCollection.doc(buyingId).get();
+    if (!doc.exists) return res.status(405).json(ERROR_MESSAGE.invalidInput);
+
+    const updatedProducts = products.map((item) =>
+      thinTransactionProduct(item)
+    );
+
+    const userDoc = await usersCollection.doc(req.user.uid).get();
+    const user = {
+      id: req.user.uid,
+      email: req.user.email,
+      name: userDoc.data().name || "-",
+    };
+    logger.log(`UPDATE BUYING BY: `, user);
+
+    const data = {
+      status: updatedStatus,
+      products: updatedProducts,
+      updatedBy: user,
+      updatedAt: serverTimestamp(),
+    };
+
+    let promises = [];
+    promises.push(buyingsCollection.doc(buyingId).set(data, { merge: true }));
+    promises.push(
+      buyingsCollection
+        .doc(buyingId)
+        .collection("logs")
+        .add({ ...data, createdBy: user, createdAt: serverTimestamp() })
+    );
+    await Promise.all(promises);
+
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    logger.error(error.message);
+    return res.status(500).json(error);
+  }
+});
+
 app.get("/:buyingId", async (req, res) => {
   const buyingId = req.params.buyingId;
   logger.log(`GET BUYING WITH ID: "${buyingId}"`);
