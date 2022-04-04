@@ -11,16 +11,21 @@ const app = express();
 app.use(authenticate);
 
 app.get("/", async (req, res) => {
+  const categoryId = String(req?.query?.categoryId || "");
   const keyword = String(req?.query?.keyword || "").toLowerCase();
 
   const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
   const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
   logger.log(
-    `GET VARIANT PRODUCTS WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
+    `GET PRODUCTS BY CATEGORY: "${categoryId}", WITH KEYWORD: "${keyword}", LIMIT: "${limit}", OFFSET: "${offset}"`
   );
 
   try {
-    const querySnapshot = await productsCollection
+    let productRef = productsCollection;
+    if (!isEmpty(categoryId))
+      productRef = productsCollection.where("category.id", "==", categoryId);
+
+    const querySnapshot = await productRef
       .where("isActive", "==", true)
       .where("nameLowercase", ">=", keyword)
       .where("nameLowercase", "<=", keyword + "\uf8ff")
