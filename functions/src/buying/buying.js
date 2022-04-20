@@ -61,9 +61,9 @@ app.get("/", async (req, res) => {
 
   try {
     const querySnapshot = await buyingRef.limit(limit).offset(offset).get();
-    const result = querySnapshot.docs.map((doc) => {
-      standarizeData(doc.data(), doc.id);
-    });
+    const result = querySnapshot.docs.map((doc) =>
+      standarizeData(doc.data(), doc.id)
+    );
 
     return res.status(200).json(result);
   } catch (error) {
