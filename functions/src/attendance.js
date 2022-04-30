@@ -32,7 +32,7 @@ app.get("/", async (req, res) => {
 
   let attendanceRef = attendancesCollection;
   if (start)
-    attendanceRef = attendancesCollection.where("createdAt", ">", start);
+    attendanceRef = attendancesCollection.where("createdAt", ">=", start);
   if (end) attendanceRef = attendancesCollection.where("createdAt", "<", end);
 
   try {

@@ -54,7 +54,7 @@ app.get("/", async (req, res) => {
     if (!isEmpty(typeId))
       transactionRef = transactionRef.where("type.id", "==", typeId);
 
-    if (start) transactionRef = transactionRef.where("createdAt", ">", start);
+    if (start) transactionRef = transactionRef.where("createdAt", ">=", start);
     if (end) transactionRef = transactionRef.where("createdAt", "<", end);
 
     transactionRef = transactionRef.orderBy("createdAt", "desc");
@@ -98,11 +98,18 @@ app.post("/", async (req, res) => {
       invoiceCodeLowercase: String(body?.invoiceCode).toLowerCase(),
     };
 
-    let totalPrice = 0;
+    let totalSellingPrice = 0;
+    let totalBuyingPrice = 0;
+    let totalItem = 0;
     let categoryIds = [];
     let brandIds = [];
     products.forEach((item) => {
-      totalPrice += Number(item?.price || 0) * Number(item?.amount || 1);
+      totalSellingPrice +=
+        Number(item?.sellingPrice || 0) * Number(item?.amount || 1);
+      totalBuyingPrice +=
+        Number(item?.buyingPrice || 0) * Number(item?.amount || 1);
+      totalItem += Number(item.amount);
+
       if (item?.category?.id) {
         const catId = item.category.id;
         if (!categoryIds.includes(catId)) categoryIds.push(catId);
@@ -115,7 +122,9 @@ app.post("/", async (req, res) => {
 
     data = {
       ...data,
-      totalPrice: totalPrice,
+      totalSellingPrice: totalSellingPrice,
+      totalBuyingPrice: totalBuyingPrice,
+      totalItem: totalItem,
       categoryIds: categoryIds,
       brandIds: brandIds,
     };
@@ -247,11 +256,18 @@ app.post("/online", async (req, res) => {
       invoiceCodeLowercase: String(body?.invoiceCode).toLowerCase(),
     };
 
-    let totalPrice = 0;
+    let totalSellingPrice = 0;
+    let totalBuyingPrice = 0;
+    let totalItem = 0;
     let categoryIds = [];
     let brandIds = [];
     products.forEach((item) => {
-      totalPrice += Number(item?.price || 0) * Number(item?.amount || 1);
+      totalSellingPrice +=
+        Number(item?.sellingPrice || 0) * Number(item?.amount || 1);
+      totalBuyingPrice +=
+        Number(item?.buyingPrice || 0) * Number(item?.amount || 1);
+      totalItem += Number(item.amount);
+
       if (item?.category?.id) {
         const catId = item.category.id;
         if (!categoryIds.includes(catId)) categoryIds.push(catId);
@@ -264,7 +280,9 @@ app.post("/online", async (req, res) => {
 
     data = {
       ...data,
-      totalPrice: totalPrice,
+      totalSellingPrice: totalSellingPrice,
+      totalBuyingPrice: totalBuyingPrice,
+      totalItem: totalItem,
       categoryIds: categoryIds,
       brandIds: brandIds,
     };
