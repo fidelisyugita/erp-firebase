@@ -156,12 +156,12 @@ app.post("/", async (req, res) => {
       products.forEach((item) => {
         if (item?.id) {
           let stockAdded = (item?.amount || 0) * -1;
-          let sold = item?.amount || 0;
+          let soldAmount = item?.amount || 0;
           promises.push(
             productsCollection
               .doc(item.id)
               .set(
-                { stock: increment(stockAdded), totalSold: increment(sold) },
+                { stock: increment(stockAdded), sold: increment(soldAmount) },
                 { merge: true }
               )
           );
@@ -313,12 +313,12 @@ app.post("/online", async (req, res) => {
     products.forEach((item) => {
       if (item?.id) {
         let stockAdded = (item?.amount || 0) * -1;
-        let sold = item?.amount || 0;
+        let soldAmount = item?.amount || 0;
         promises.push(
           productsCollection
             .doc(item.id)
             .set(
-              { stock: increment(stockAdded), totalSold: increment(sold) },
+              { stock: increment(stockAdded), sold: increment(soldAmount) },
               { merge: true }
             )
         );
@@ -380,6 +380,27 @@ app.put("/:transactionId", async (req, res) => {
     );
     await Promise.all(promises);
 
+    if (updatedStatus.name === "SELESAI") {
+      // UPDATE PRODUCT START
+      promises = [];
+      updatedProducts.forEach((item) => {
+        if (item?.id) {
+          let rejectAmount = item?.rejected || 0;
+          promises.push(
+            productsCollection.doc(item.id).set(
+              {
+                stock: increment(rejectAmount * -1),
+                reject: increment(rejectAmount),
+              },
+              { merge: true }
+            )
+          );
+        }
+      });
+      await Promise.all(promises);
+      // UPDATE PRODUCT END
+    }
+
     return res.status(200).json({ ok: true });
   } catch (error) {
     logger.error(error.message);
@@ -409,6 +430,35 @@ app.delete("/:transactionId", async (req, res) => {
       .doc(transactionId)
       .set({ isActive: false }, { merge: true });
     return res.status(200).json({ ok: true });
+  } catch (error) {
+    logger.error(error.message);
+    return res.status(500).json(error);
+  }
+});
+
+app.get("/contact/:contactId", async (req, res) => {
+  const contactId = req.params.contactId;
+  if (isNil(contactId)) return res.status(405).json(ERROR_MESSAGE.invalidInput);
+
+  const limit = Number(req?.query?.limit || LIMIT_PER_PAGE);
+  const offset = req?.query?.page ? limit * Number(req.query.page) : 0;
+  logger.log(
+    `GET TRANSACTIONS WITH CONTACT ID: "${contactId}", LIMIT: "${limit}", OFFSET: "${offset}"`
+  );
+
+  try {
+    const querySnapshot = await transactionsCollection
+      .where("isActive", "==", true)
+      .where("contact.id", "==", contactId)
+      .orderBy("createdAt", "desc")
+      .limit(limit)
+      .offset(offset)
+      .get();
+    const result = querySnapshot.docs.map((doc) =>
+      standarizeData(doc.data(), doc.id)
+    );
+
+    return res.status(200).json(result);
   } catch (error) {
     logger.error(error.message);
     return res.status(500).json(error);

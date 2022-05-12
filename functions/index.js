@@ -6,6 +6,7 @@ const auth = require("./src/auth");
 const user = require("./src/user");
 const contact = require("./src/contact");
 const attendance = require("./src/attendance");
+const dashboard = require("./src/dashboard");
 
 const brand = require("./src/product/brand");
 const measureUnit = require("./src/product/measureUnit");
@@ -29,6 +30,7 @@ exports.auth = auth;
 exports.user = user;
 exports.contact = contact;
 exports.attendance = attendance;
+exports.dashboard = dashboard;
 
 exports.brand = brand;
 exports.measureUnit = measureUnit;
