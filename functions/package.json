@@ -6,7 +6,8 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy-old": "firebase deploy --only functions",
-    "deploy": "firebase deploy --only functions --project erp-firebase-4e1a2",
+    "deploy": "firebase deploy --only functions --project kreasindo-mitra-prima",
+    "deploy-demo": "firebase deploy --only functions --project erp-firebase-4e1a2",
     "logs": "firebase functions:log"
   },
   "engines": {

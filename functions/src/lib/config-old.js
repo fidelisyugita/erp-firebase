@@ -1,12 +1,12 @@
 exports.FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCGWv4U61gmooJXsT3_FaSLDMDRqYoAFn0",
-  authDomain: "kreasindo-mitra-prima.firebaseapp.com",
+  apiKey: "AIzaSyDxqhspIMQ0mJ_uopHCyR9MXWyGeEscD8A",
+  authDomain: "erp-firebase-4e1a2.firebaseapp.com",
   databaseURL:
-    "https://kreasindo-mitra-prima-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "kreasindo-mitra-prima",
-  storageBucket: "kreasindo-mitra-prima.appspot.com",
-  messagingSenderId: "280267916461",
-  appId: "kreasindo-mitra-prima",
+    "https://erp-firebase-4e1a2-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "erp-firebase-4e1a2",
+  storageBucket: "erp-firebase-4e1a2.appspot.com",
+  messagingSenderId: "254532011566",
+  appId: "erp-firebase-4e1a2",
 };
 
 exports.REGION = "asia-southeast2";
