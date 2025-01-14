@@ -1,5 +1,5 @@
 exports.FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCGWv4U61gmooJXsT3_FaSLDMDRqYoAFn0",
+  apiKey: "",
   authDomain: "kreasindo-mitra-prima.firebaseapp.com",
   databaseURL:
     "https://kreasindo-mitra-prima-default-rtdb.asia-southeast1.firebasedatabase.app",
